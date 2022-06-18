@@ -133,10 +133,10 @@ class IntegerField(BaseField):
 
 class ListField(BaseField):
 
-    __slots__ = ('should_be', 'should_in', 'should_contain',
+    __slots__ = ('should_be', 'should_in', 'should_contain', 'should_not_contain',
                  # For list field
                  'count_should_be', 'count_should_gt', 'count_should_lt',
-                 'count_should_gte', 'count_should_lte',
+                 'count_should_gte', 'count_should_lte', 'should_no_duplicates'
                  # For list members
                  'members_should_contain_model'
                  )
@@ -156,6 +156,27 @@ class ListField(BaseField):
                 return self.error("[Lv2] %s %s does not contain %s." % (self.__class__.__name__, value, expect_value))
         return value
 
+    def _func_should_no_duplicates(self, value, expect_value=True):
+        # bcz dict can not be `set`, loop to validate.
+        if isinstance(expect_value, bool):
+            new_list = []
+            for v in value:
+                if v not in new_list:
+                    new_list.append(v)
+            if len(new_list) != len(value):
+                return self.error("[Lv2] %s %s has duplicate data." % (self.__class__.__name__, value))
+        else:
+            return self.error(f"[Lv2] `should_no_duplicates` only accepts bool params, but {expect_value!r} found.")
+
+    def _func_should_not_contain(self, value, expect_value):
+        if isinstance(expect_value, list):
+            if len(set(value).intersection(set(expect_value))) > 0:
+                return self.error("[Lv2] %s %s should not contain %s." % (self.__class__.__name__, value, expect_value))
+        else:
+            if expect_value in value:
+                return self.error("[Lv2] %s %s should not contain %s." % (self.__class__.__name__, value, expect_value))
+        return value
+
     def _func_should_in(self, value, expect_value):
         if isinstance(expect_value, list):
             if len(set(value).intersection(set(expect_value))) != len(value):
@@ -163,7 +184,7 @@ class ListField(BaseField):
             return value
         else:
             return self.error(f"[Lv1] {self.__class__.__name__} only accepts {self.field_type} values. "
-                              f"but {value!r} found.")
+                              f"but {expect_value!r} found.")
 
     def _func_count_should_be(self, value, expect_value):
         if isinstance(expect_value, int):
@@ -286,6 +307,7 @@ class DynamicListField(ListField):
         return self.error("[Lv2] %s should be %s but %s found." % (self.__class__.__name__, expect_value, value))
 
     def validate(self, value):
+        original_value = value
         # Lv1 validate
         # If validate fail, just return value.
         if self._validation_is_error(value):
@@ -357,11 +379,12 @@ class DynamicListField(ListField):
             elif field.__class__.__base__.__name__ == 'ValidatorModel':
                 value, dict_value_list = self._validate_field_in_value_list(field, dict_value_list)
 
-            if value != 'not_assigned':
+            if self._validation_is_error(value):
                 validate_result.append(value)
+                return validate_result
 
-        # Lv2 validate
-        validate_result = self._validate_should_funcs(validate_result)
+        # Lv2 validate, we need use original value to validate.
+        validate_result = self._validate_should_funcs(original_value)
         return validate_result
 
     @staticmethod
@@ -369,10 +392,7 @@ class DynamicListField(ListField):
         value = None
         lv2_value = None
         for value in value_list:
-            if field.__class__.__base__.__name__ == 'ValidatorModel':
-                value = field.validate(value)
-            else:
-                value = field.validate(value)
+            value = field.validate(value)
             # If validate pass, remove the value to avoid validation conflicts.
             if 'ValidationError' not in str(value):
                 value_list.remove(value)
