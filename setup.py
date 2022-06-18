@@ -20,18 +20,15 @@ install_requires = [
 setup(
     name='ApiTestEz',
     version=version,
-    url='https://scrapy.org',
+    url='https://github.com/bruce4520196/ApiTestEz',
     description='An easier api test framework.',
     long_description=open('README.rst').read(),
-    author='Scrapy developers',
-    maintainer='Pablo Hoffman',
-    maintainer_email='pablo@pablohoffman.com',
+    author='Bruce Cai',
+    maintainer='Bruce Cai',
+    maintainer_email='whiteghostcat@gmail.com',
     packages=find_packages(exclude=('tests', 'tests.*')),
     include_package_data=True,
     zip_safe=False,
-    entry_points={
-        'console_scripts': ['scrapy = scrapy.cmdline:execute']
-    },
     classifiers=[
         'Framework :: Scrapy',
         'Development Status :: 3 - Alpha',
