@@ -22,7 +22,6 @@ setup(
     version=version,
     url='https://github.com/bruce4520196/ApiTestEz',
     description='An easier api test framework.',
-    long_description=open('README.rst').read(),
     author='Bruce Cai',
     maintainer='Bruce Cai',
     maintainer_email='whiteghostcat@gmail.com',
