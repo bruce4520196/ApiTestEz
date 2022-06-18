@@ -41,16 +41,11 @@ class EzResponse(Response):
             raise ValidationError(f'[{self.owner} {validate_result}]')
 
     def __str__(self):
-        return f"<{self.__class__.__name__}> {self.owner}:\n" \
-               f"{self.response.text!r}"
+        if self.response:
+            return f"<{self.__class__.__name__}> {self.owner}:\n" \
+                   f"{self.response.text!r}"
+        else:
+            return f"<{self.__class__.__name__}> {self.owner}: response is None, " \
+                   f"maybe you didn't send the request?"
 
     __repr__ = __str__
-
-
-if __name__ == '__main__':
-    import requests
-
-    r = requests.get('http://www.baidu.com')
-    e = EzResponse(r)
-    print(e.text)
-    print(e.bean())

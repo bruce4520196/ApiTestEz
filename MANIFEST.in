@@ -1,1 +1,2 @@
 include api_test_ez/VERSION
+include api_test_ez/project/configs/default_configs.cfg
