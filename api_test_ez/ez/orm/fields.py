@@ -288,10 +288,10 @@ class DynamicListField(ListField):
     We will loop through all elements to do this.
     This may take a long time."""
 
-    __slots__ = ('should_be', 'should_in', 'should_contain',
+    __slots__ = ('should_be', 'should_in', 'should_contain', 'should_not_contain',
                  # For list field
                  'count_should_be', 'count_should_gt', 'count_should_lt',
-                 'count_should_gte', 'count_should_lte',
+                 'count_should_gte', 'count_should_lte', 'should_no_duplicates',
                  # For list members
                  'members_should_contain_model'
                  )
