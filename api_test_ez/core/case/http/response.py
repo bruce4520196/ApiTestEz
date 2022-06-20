@@ -12,6 +12,7 @@ from requests import Response
 from api_test_ez.ez.decorator.jsonbean import json_bean
 from api_test_ez.ez.orm.errors import ValidationError
 from api_test_ez.ez.orm.models import ValidatorModel
+from marshmallow import Schema
 
 
 class EzResponse(Response):
@@ -39,6 +40,10 @@ class EzResponse(Response):
         validate_result = model.validate(self.response.json(), full_repr)
         if 'ValidationError' in str(validate_result):
             raise ValidationError(f'[{self.owner} {validate_result}]')
+
+    def validate(self, schema: Schema):
+        """Validate from marshmallow."""
+        return schema.load(self.response.json())
 
     def __str__(self):
         if self.response:

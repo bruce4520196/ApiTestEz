@@ -15,6 +15,8 @@ class Request(object):
         self._http_data = {}
         self._meta_data = {}
         self._url = None
+        self._host = None
+        self._path = None
         self._method = None
         self._body = None
         self._owner = None
@@ -22,6 +24,18 @@ class Request(object):
     def _filter_data(self, request_data):
         if request_data:
             self._url = request_data.pop("url", default=None)
+            self._host = request_data.pop("host", default=None)
+            self._path = request_data.pop("path", default=None)
+            if self._url is None and self._host:
+                if not self._host.startswith('http'):
+                    self._host = f'http://{self._host}'
+                if self._path:
+                    self._url = f'{self._host}{self._path}' \
+                        if self._path.startswith('/') \
+                        else f'{self._host}/{self._path}'
+                else:
+                    self._url = self._host
+
             self._method = request_data.pop("method")
             self._body = request_data.pop("body", default=None)
             # http
@@ -60,6 +74,22 @@ class Request(object):
     @url.setter
     def url(self, value):
         self._url = value
+
+    @property
+    def host(self):
+        return self._host
+
+    @host.setter
+    def host(self, value):
+        self._host = value
+
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, value):
+        self._path = value
 
     @property
     def method(self):

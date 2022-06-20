@@ -72,7 +72,7 @@ def get_ez_config(ez_file_path):
     ez_cfg_filelist = search_file(ez_cfg_name, path=ez_file_path)
 
     _configs = Configs()
-    support_file_config_priority = ['module', 'package', 'project']
+    support_file_config_priority = ['package', 'module', 'project']
     for ez_cfg_file in ez_cfg_filelist:
         if len(support_file_config_priority) <= 0:
             break

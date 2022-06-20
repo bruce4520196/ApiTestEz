@@ -12,18 +12,3 @@ def get_config(file_path):
     cfg = ConfigParser()
     cfg.read(file_path)
     return cfg
-
-
-if __name__ == '__main__':
-    import os
-    print(os.path.basename(r'E:\PyCharmWorker\ApiTestEz\api_test_ez\project\configs\default_configs.cfg'))
-    print(type(get_config(r'E:\PyCharmWorker\ApiTestEz\api_test_ez\project\configs\default_configs.cfg')))
-    for k, v in get_config(r'E:\PyCharmWorker\ApiTestEz\api_test_ez\project\configs\default_configs.cfg').items():
-        print(k, list(v.values()))
-
-        if k == 'HTTP':
-            print(dir(v))
-            print(v)
-            print(v.get('headers'))
-            print(v.get('auto_request'))
-            print(list(v.values()))
