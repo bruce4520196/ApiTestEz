@@ -6,6 +6,7 @@
 """
 from importlib import import_module
 
+from api_test_ez.ez.decorator import singleton
 from api_test_ez.project.settings import default_settings
 
 
@@ -45,6 +46,7 @@ class BaseSettings(dict):
         self.__setitem__(name, value)
 
 
+@singleton
 class Settings(BaseSettings):
     """
     This object stores ApiTestEz project for the configuration of internal

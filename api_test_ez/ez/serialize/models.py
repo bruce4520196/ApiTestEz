@@ -6,8 +6,8 @@
 """
 import copy
 
-from api_test_ez.ez.orm.errors import ValidationError
-from api_test_ez.ez.orm.fields import BaseField, StringField, IntegerField
+from api_test_ez.ez.serialize.errors import ValidationError
+from api_test_ez.ez.serialize.fields import BaseField, StringField, IntegerField
 
 
 __all__ = ["ValidatorModel"]
@@ -40,6 +40,7 @@ class ModelMetaclass(type):
 class ValidatorModel(metaclass=ModelMetaclass):
 
     def __init__(self, *args, **values):
+        print(self.__fields_mapping__)
         if args:
             raise TypeError(
                 "Instantiating a field with positional arguments is not "
@@ -82,30 +83,3 @@ class ValidatorModel(metaclass=ModelMetaclass):
         return f"<{self.__class__.__name__}> {getattr(self, '__fields_mapping__')}"
 
     __repr__ = __str__
-
-
-if __name__ == '__main__':
-    class C(ValidatorModel):
-        d = StringField()
-
-    class B(ValidatorModel):
-        b = IntegerField()
-
-    class User(ValidatorModel):
-        key = StringField(required=True)
-        value = B()
-    d1 = {
-        'key': 1,
-        'value': {
-            'b': '2',
-            'd': 444,
-            'c': [1, 2, {'d': 6}]
-        },
-        'c': '3'
-    }
-    u = User()
-    # setattr(u, 'key', 1)
-    # print(u.key)
-    # u.value.b = '3'
-    # print(u.value.b)
-    print(u.validate(d1))

@@ -10,21 +10,24 @@ from json import JSONDecodeError
 from requests import Response
 
 from api_test_ez.ez.decorator.jsonbean import json_bean
-from api_test_ez.ez.orm.errors import ValidationError
-from api_test_ez.ez.orm.models import ValidatorModel
+from api_test_ez.ez.serialize.errors import ValidationError
+from api_test_ez.ez.serialize.models import ValidatorModel
 from marshmallow import Schema
+
+from api_test_ez.project import get_ez_logger, get_ez_settings
 
 
 class EzResponse(Response):
 
-    __slots__ = ("owner", "response")
+    __slots__ = ("owner", "response", "logger")
 
-    def __init__(self, response: Response = None):
+    def __init__(self, logger, response: Response = None):
         super().__init__()
         self.response = response
+        self.logger = logger
 
     def __getattribute__(self, item):
-        if item not in ("owner", "response") and not item.startswith('__') and hasattr(self.response, item):
+        if item not in ("owner", "response", "logger") and not item.startswith('__') and hasattr(self.response, item):
             return self.response.__getattribute__(item)
         else:
             return super(EzResponse, self).__getattribute__(item)
@@ -32,6 +35,7 @@ class EzResponse(Response):
     def set(self, response: Response):
         self.response = response
 
+    @property
     @json_bean
     def bean(self):
         return self.json()
@@ -39,7 +43,9 @@ class EzResponse(Response):
     def pair(self, model: ValidatorModel, full_repr=False):
         validate_result = model.validate(self.response.json(), full_repr)
         if 'ValidationError' in str(validate_result):
-            raise ValidationError(f'[{self.owner} {validate_result}]')
+            validation_error = ValidationError(f'[{self.owner}] {validate_result}')
+            self.logger.error(validation_error)
+            raise validation_error
 
     def validate(self, schema: Schema):
         """Validate from marshmallow."""

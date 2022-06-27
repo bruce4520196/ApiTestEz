@@ -15,15 +15,14 @@ from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
 
-from api_test_ez.ez import Log, Http
-from api_test_ez.project import get_ez_config, Project
+from api_test_ez.ez import Http
+from api_test_ez.project import Project
 
 
 def load_test_data(data_filename):
     if isinstance(data_filename, str):
         with open(data_filename, 'rb') as f:
             data_set = tablib.Dataset().load(f.read())
-            print(data_set)
             return data_set.dict
     else:
         return []
@@ -116,7 +115,7 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
 
     def __init__(self, methodName):
         self.request = Request(http=Http())
-        self.response = EzResponse()
+        self.response = EzResponse(logger=self.logger)
         self.request.owner = methodName
         self.response.owner = methodName
         self.initRequest(methodName)
@@ -141,6 +140,8 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
         return self.request
 
     def doRequest(self, request=None):
+        if request:
+            self.request.set(request)
         # Prepare request
         body_type = "data"
         http = self.request.http

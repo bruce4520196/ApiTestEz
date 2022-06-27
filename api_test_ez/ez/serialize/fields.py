@@ -7,7 +7,7 @@
 import re
 from abc import abstractmethod, ABC
 
-from api_test_ez.ez.orm.errors import ValidationError
+from api_test_ez.ez.serialize.errors import ValidationError
 
 
 __all__ = ["StringField", "IntegerField", "ListField", "DynamicListField"]

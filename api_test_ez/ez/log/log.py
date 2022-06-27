@@ -9,8 +9,6 @@ import os
 import logging
 from enum import Enum
 
-from api_test_ez.ez.decorator import singleton
-
 Log_Format = '%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] [%(thread)d] - %(message)s'
 
 
