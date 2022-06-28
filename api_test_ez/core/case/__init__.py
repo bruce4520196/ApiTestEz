@@ -5,6 +5,7 @@
 # @desc    :
 """
 import copy
+import json
 import os
 
 import tablib
@@ -151,9 +152,9 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
         body = self.request.body
         if body:
             try:
-                body = ast.literal_eval(body)
+                body = json.loads(body)
                 body_type = "json"
-            except SyntaxError:
+            except json.JSONDecodeError:
                 pass
 
         # Request start
