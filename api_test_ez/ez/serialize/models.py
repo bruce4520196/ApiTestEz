@@ -32,7 +32,7 @@ class ModelMetaclass(type):
                 attrs.update({attr_name: attr_value})
 
         # Record all fields.
-        attrs["__fields_mapping__"] = fields_mapping
+        attrs["__declared_fields__"] = fields_mapping
 
         return super_new(mcs, name, bases, attrs)
 
@@ -40,7 +40,7 @@ class ModelMetaclass(type):
 class ValidatorModel(metaclass=ModelMetaclass):
 
     def __init__(self, *args, **values):
-        print(self.__fields_mapping__)
+        self.__fields_mapping__ = copy.deepcopy(getattr(self, "__declared_fields__"))
         if args:
             raise TypeError(
                 "Instantiating a field with positional arguments is not "

@@ -17,7 +17,7 @@ ApiTestEz（以下简称EZ）主要提供以下3方面的核心功能：<br>
 ### Quick Start
 
 ---
-#### 一个简单项目
+#### 最小测试项目
 
        |-- EzTestDemo
            |-- <project_name>
@@ -327,7 +327,7 @@ class SomeTest(UnitCase):
     class SomeTest(UnitCase):
     
         def test_something(self):
-            self.response.pair(PhoneValidate())
+            self.response.validate(PhoneValidate())
     ```
 - 一个稍复杂的例子
 
@@ -350,17 +350,35 @@ class SomeTest(UnitCase):
         title = fields.String(required=True)
         category = fields.String(required=True)
         images = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
-        thumbnail = StringField(required=True)
+        thumbnail = fields.String(required=True)
 
-        class Meta:
-            unknown = INCLUDE
+    class Meta:
+        unknown = INCLUDE
+
+    @validates("thumbnail")
+    def validate_thumbnail(self, value):
+        request = self.context.get("request")
+        if request:
+            if request.path not in value:
+                raise ValidationError(f"The `thumbnail` should contain `{request.path!r}`.")
+        else:
+            raise ValidationError("Get `request` object fail.")
+
+    @validates_schema
+    def validate_category(self, data, **kwargs):
+        if data['id'] <= 5:
+            if data['category'] != "smartphones":
+                raise ValidationError(f"Expect `smartphones`, but `{data['category']!r}` found.")
+        else:
+            if data['category'] != "laptops":
+                raise ValidationError(f"Expect `smartphones`, but `{data['category']!r}` found.")
   ```
     由于涉及到了对外部变量的依赖，我们需要在断言前动态修改模型属性。<br>
     <br>
     `test_whatever.py`
     ```python
     # ValidatorModel
-    class SomeTest(UnitCase):
+    class SomeTestVM(UnitCase):
 
         def test_something(self):
             pv = PhoneValidate()
@@ -372,6 +390,14 @@ class SomeTest(UnitCase):
             else:
                 pv.category.should_be("laptops")
             self.response.pair(pv)
+    
+    # marshmallow
+    class SomeTestMM(UnitCase):
+
+        def test_something(self):
+            ps = PhoneSchema()
+            ps.context["request"] = self.request
+            self.response.validate(ps)
     ```
 
 ---
