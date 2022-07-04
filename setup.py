@@ -43,6 +43,6 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.5',
     install_requires=install_requires,
 )
