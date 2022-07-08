@@ -75,6 +75,10 @@ class HtmlReporter(Reporter):
 class BRReporter(Reporter):
     """BeautifulReport"""
 
+    def __init__(self, case_path, report_theme=None,  *args, **kwargs):
+        super().__init__(case_path, *args, **kwargs)
+        self.report_theme = report_theme if report_theme else self.report.theme
+
     def run(self):
         if not os.path.exists(self.report_dir):
             os.makedirs(self.report_dir)
@@ -84,5 +88,5 @@ class BRReporter(Reporter):
             filename=self.report_file_name,
             description=self.report_title,
             report_dir=self.report_dir,
-            theme='theme_default'
+            theme=self.report_theme
         )

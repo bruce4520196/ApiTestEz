@@ -121,6 +121,7 @@ class ReportConfig:
         self._report_file_path = os.path.join(self._report_dir, self._report_file_name)
         self._report_title = project_settings.get("REPORT_TITLE")
         self._report_desc = project_settings.get("REPORT_DESC")
+        self._report_theme = project_settings.get("BR_REPORT_THEME")
 
     @property
     def report_file_path(self):
@@ -141,6 +142,10 @@ class ReportConfig:
     @property
     def report_file_name(self):
         return self._report_file_name
+
+    @property
+    def theme(self):
+        return self._report_theme
 
 
 @singleton
