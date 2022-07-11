@@ -4,3 +4,7 @@
 # @Author  : bruce
 # @desc    : A marshmallow utils.
 """
+from api_test_ez.ez.ez_marshmallow.schema import EzSchema
+
+
+EzSchema = EzSchema

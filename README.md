@@ -454,11 +454,35 @@ report.run()
 | body     | 请求body格式 | 默认为data，支持json，files，stream详见requests库 | request.http     |
 | *others* | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | request.meta     |
 
+
+### marshmallow之EzSchema
+
+在`EzSchema`中，你可以动态修改字段的校验规则。
+
+```python
+from api_test_ez.ez.ez_marshmallow import EzSchema
+from marshmallow import fields, validate
+
+
+class PhoneSchema(EzSchema):
+    id = fields.Integer(required=True, strict=True)
+    title = fields.String(required=True)
+    category = fields.String(required=True)
+    images = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
+
+
+if __name__ == '__main__':
+    ps = PhoneSchema()
+    ps.title.validate = validate.OneOf(["smartphones", "laptops"])
+```
+
+
+
 ### TODO
 1.  用例支持入参，例：f"{'X-Forwarded-For': ${province_ip} }"
 2.  ~~url拆分host + path~~
 3.  ~~报告~~
-4.  ~~ORM响应断言实现~~
+4.  ~~序列化断言实现~~
 5.  cmdline
 6.  项目构建工具：ez create xxxx
 7.  基于pytest的用例实现
