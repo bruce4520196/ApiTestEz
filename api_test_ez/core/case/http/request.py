@@ -20,12 +20,14 @@ class Request(object):
         self._method = None
         self._body = None
         self._owner = None
+        self._body_type = None
 
     def _filter_data(self, request_data):
         if request_data:
             self._url = request_data.pop("url", default=None)
             self._host = request_data.pop("host", default=None)
             self._path = request_data.pop("path", default=None)
+            self._body_type = request_data.pop("body_type", default="data")
             if self._url is None and self._host:
                 if not self._host.startswith('http'):
                     self._host = f'http://{self._host}'
@@ -106,6 +108,14 @@ class Request(object):
     @body.setter
     def body(self, value):
         self._body = value
+
+    @property
+    def body_type(self):
+        return self._body_type
+
+    @body_type.setter
+    def body_type(self, value):
+        self._body_type = value
 
     @property
     def http(self):

@@ -9,7 +9,12 @@ from marshmallow import Schema, ValidationError
 
 
 class EzSchema(Schema):
-    """Rewrite error message."""
+
+    def __getattr__(self, item):
+        """Return fields in `_declared_fields`, to dynamically modify field properties."""
+        if item in self._declared_fields.keys():
+            return self._declared_fields[item]
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
     def handle_error(
         self, error: ValidationError, data: typing.Any, *, many: bool, **kwargs

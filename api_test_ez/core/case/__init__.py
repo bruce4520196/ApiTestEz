@@ -137,25 +137,19 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
                     _ddt_data_func = getattr(self, data_holder)
                     _ddt_data_func()
         self.request.set(self.local_config)
-        self.logger.debug(repr(self.request))
         return self.request
 
     def doRequest(self, request=None):
         if request:
             self.request.set(request)
+        self.logger.debug(repr(self.request))
         # Prepare request
-        body_type = "data"
         http = self.request.http
         url = self.request.url
         method = self.request.method.lower()
 
         body = self.request.body
-        if body:
-            try:
-                body = json.loads(body)
-                body_type = "json"
-            except json.JSONDecodeError:
-                pass
+        body_type = self.request.body_type
 
         # Request start
         if url and hasattr(http, method):

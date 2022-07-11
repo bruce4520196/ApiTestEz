@@ -10,5 +10,5 @@ from configparser import ConfigParser
 def get_config(file_path):
     """Get Ez config file as a ConfigParser"""
     cfg = ConfigParser()
-    cfg.read(file_path)
+    cfg.read(file_path, encoding='utf-8')
     return cfg
