@@ -16,11 +16,11 @@ from api_test_ez.ez import get_config
 
 CONFIG_PRIORITIES = {
     'default': 0,
-    'command': 10,
-    'package': 20,
-    'module': 30,
-    'project': 40,
-    'case': 50,
+    'package': 10,
+    'module': 20,
+    'project': 30,
+    'case': 40,
+    'command': 50,
 }
 
 

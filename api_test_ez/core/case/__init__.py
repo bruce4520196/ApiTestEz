@@ -155,4 +155,5 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
         if url and hasattr(http, method):
             do = getattr(http, method)
             self.response.set(do(url=url, **{body_type: body}))
+            http.close()
             self.logger.debug(repr(self.response))

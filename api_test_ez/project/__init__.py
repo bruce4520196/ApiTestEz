@@ -118,7 +118,8 @@ class ReportConfig:
     def __init__(self, project_settings: Settings):
         self._report_dir = project_settings.get("REPORT_DIR")
         self._report_file_name = project_settings.get("REPORT_FILE_NAME")
-        self._report_file_path = os.path.join(self._report_dir, self._report_file_name)
+
+        self._report_file_path = os.path.join(self._report_dir, self._report_file_name) if self._report_dir else None
         self._report_title = project_settings.get("REPORT_TITLE")
         self._report_desc = project_settings.get("REPORT_DESC")
         self._report_theme = project_settings.get("BR_REPORT_THEME")

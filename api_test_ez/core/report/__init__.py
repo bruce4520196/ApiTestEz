@@ -5,6 +5,7 @@
 # @desc    :
 """
 import os
+import unittest
 from abc import ABC, abstractmethod
 
 from BeautifulReport import BeautifulReport
@@ -39,7 +40,6 @@ class Reporter(ABC):
     def load_tests(self):
         """Load tests from a dir. It is same as the `load_tests` protocol in `unittest`."""
         if self.case_file_name:
-            print(self.case_file_name)
             return defaultTestLoader.discover(self.case_file_dir, pattern=f'{self.case_file_name}')
         else:
             return defaultTestLoader.discover(self.case_file_dir, pattern='*.py')
@@ -90,3 +90,15 @@ class BRReporter(Reporter):
             report_dir=self.report_dir,
             theme=self.report_theme
         )
+
+
+class DryRun(Reporter):
+    """DryRun"""
+
+    def __init__(self, case_path,  *args, **kwargs):
+        super().__init__(case_path, *args, **kwargs)
+
+    def run(self):
+        suite = self.load_tests()
+        runner = unittest.TextTestRunner()
+        runner.run(suite)

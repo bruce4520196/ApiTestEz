@@ -25,74 +25,74 @@ ApiTestEz（以下简称EZ）主要提供以下3方面的核心功能：<br>
            |-- settings
            |-- project.cfg
 
-     `test_whatever.py`
+ `test_whatever.py`
 
-   ```python
-   import unittest
-   
-   from api_test_ez.core.case import UnitCase
-      
-      
-   class SomeTest(UnitCase):
-      
-       def beforeRequest(self):
-           self.request.url = "http://www.baidu.com"
-      
-       def test_something(self):
-           assert self.response.status_code == 200
-      
-      
-   if __name__ == '__main__':
-       unittest.main()
+```python
+import unittest
+
+from api_test_ez.core.case import UnitCase
+  
+  
+class SomeTest(UnitCase):
+  
+   def beforeRequest(self):
+       self.request.url = "http://www.baidu.com"
+  
+   def test_something(self):
+       assert self.response.status_code == 200
+  
+  
+if __name__ == '__main__':
+   unittest.main()
 
    ```
 ---
 #### 完整项目
 
-        |-- EzTestDemo
-          |-- <project_name>
-          |   |-- <test_api_dir>
-          |   |   |-- test_whatever.py
-          |   |   |-- ez.cfg (optional: package priority)
-          |   |   |-- model.py (optional)
-          |   |-- ez.cfg (optional: module priority)
-          |-- settings
-          |-- project.cfg
-          |-- ez.cfg (optional: project priority)
-          |-- <resource> (optional)
-              |-- <case_files> (optional)
+    |-- EzTestDemo
+      |-- <project_name>
+      |   |-- <test_api_dir>
+      |   |   |-- test_whatever.py
+      |   |   |-- ez.cfg (optional: package priority)
+      |   |   |-- model.py (optional)
+      |   |-- ez.cfg (optional: module priority)
+      |-- settings
+      |-- project.cfg
+      |-- ez.cfg (optional: project priority)
+      |-- <resource> (optional)
+          |-- <case_files> (optional)
 
-     *`project.cfg`*为项目标识，它告诉EZ项目根目录和项目*`settings.py`*存放位置。<br>
-     *`setting.py`*提供项目初始化设置项，如**`log`**、**`report`**配置。<br>
-     *`ez.cfg`*与*`settings`*的区别在于，*`ez.cfg`*提供业务相关的配置，如*`http`*的*`headers`*、*`case_filepath`*（用例存放目录）、*`auto_request`*（自动完成请求）开关等，你还可以在里面放置业务需要的特殊变量，这些变量将会存放在*self.request.meta*中。它包含了多个层级`['case', 'package', 'module', 'project', 'command', 'default']`，优先级一次递减。<br>
-     关于*`setting.py`*和*`ez.cfg`*支持的配置详情后述。<br>
-     <br>
-     *ez.cfg*是EZ框架的核心功能之一。下面，通过使用ez.cfg，我们来完成一个简单的请求。<br>
+ *`project.cfg`*为项目标识，它告诉EZ项目根目录和项目*`settings.py`*存放位置。<br>
+ *`setting.py`*提供项目初始化设置项，如**`log`**、**`report`**配置。<br>
+ *`ez.cfg`*与*`settings`*的区别在于，*`ez.cfg`*提供业务相关的配置，如*`http`*的*`headers`*、*`case_filepath`*（用例存放目录）、*`auto_request`*（自动完成请求）开关等，你还可以在里面放置业务需要的特殊变量，这些变量将会存放在*self.request.meta*中。它包含了多个层级`['case', 'package', 'module', 'project', 'command', 'default']`，优先级一次递减。<br>
+ 关于*`setting.py`*和*`ez.cfg`*支持的配置详情后述。<br>
+ <br>
+ *ez.cfg*是EZ框架的核心功能之一。下面，通过使用ez.cfg，我们来完成一个简单的请求。<br>
 
-     `ez.cfg`
+ `ez.cfg`
 
-   ```ini
-   [HTTP] 
-   url = http://www.baidu.com
-   ```
+```ini
+[HTTP] 
+url = http://www.baidu.com
+```
         
-     `test_whatever.py`
+ `test_whatever.py`
         
-     ```python
-     import unittest
+ ```python
+ import unittest
 
-     from api_test_ez.core.case import UnitCase
-
-
-     class SomeTest(UnitCase):
-
-         def test_something(self):
-             assert self.response.status_code == 200
+ from api_test_ez.core.case import UnitCase
 
 
-     if __name__ == '__main__':
-         unittest.main()
-      ```
+ class SomeTest(UnitCase):
+
+     def test_something(self):
+         assert self.response.status_code == 200
+
+
+ if __name__ == '__main__':
+     unittest.main()
+  ```
 ---
 #### EZ和[ddt](https://github.com/datadriventests/ddt)一起工作
    EZ支持`ddt`
@@ -130,22 +130,22 @@ host = https://dummyjson.com
 ```
    > *在`ez.cfg`中，HTTP method默认为GET。*
    
-   在`test_whatever.py`中，现阶段不做出改变，我们将在后面的介绍中深入认识[断言](#断言)。
-   ```python
-     import unittest
+在`test_whatever.py`中，现阶段不做出改变，我们将在后面的介绍中深入认识[断言](#断言)。
+```python
+ import unittest
 
-     from api_test_ez.core.case import UnitCase
-
-
-     class SomeTest(UnitCase):
-
-         def test_something(self):
-             assert self.response.status_code == 200
+ from api_test_ez.core.case import UnitCase
 
 
-     if __name__ == '__main__':
-         unittest.main()
-   ```
+ class SomeTest(UnitCase):
+
+     def test_something(self):
+         assert self.response.status_code == 200
+
+
+ if __name__ == '__main__':
+     unittest.main()
+```
    >*在test文件中，我们可以用过`__casefile__`显式指定用例路径，这在同一个文件夹下有多个.py测试代码的情况下很有用。但对项目来说不推荐这种做法。例：* 
  
  ```python
@@ -454,6 +454,13 @@ report.run()
 | body     | 请求body格式 | 默认为data，支持json，files，stream详见requests库 | request.http     |
 | *others* | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | request.meta     |
 
+`config`优先级：
+- `default`: 0,
+- `package`: 10,
+- `module`: 20,
+- `project`: 30,
+- `case`: 40,
+- `command`: 50,
 
 ### marshmallow之EzSchema
 
