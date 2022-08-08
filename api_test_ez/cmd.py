@@ -159,7 +159,7 @@ class EzCommand:
                 project.configs.set(*cfg.split('=', 1), priority='command')
 
         if args.action == 'run':
-            if args.report_style and project.report.report_dir:
+            if project.report.report_dir:
                 if args.report_style == 'br':
                     BRReporter(args.cases_path).run()
                     return
@@ -169,6 +169,8 @@ class EzCommand:
                 else:
                     print(f'EZ COMMAND WARNING: `{args.report_style}` is not supported `report_style`, '
                           f'run tests as dry-run. See: \n')
+            else:
+                print(f'EZ COMMAND WARNING: `report_dir` does not set, run tests as dry-run. See: \n')
             DryRun(args.cases_path).run()
             return
 

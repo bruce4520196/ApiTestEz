@@ -37,14 +37,6 @@ class EzResponse(Response):
     #     return self.response.__getattribute__(item)
 
     @property
-    def owner(self):
-        return self._owner
-
-    @owner.setter
-    def owner(self, value):
-        self._owner = value
-
-    @property
     def content(self) -> bytes:
         return self.response.content
 
