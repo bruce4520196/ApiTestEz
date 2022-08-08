@@ -25,15 +25,28 @@ class EzResponse(Response):
         super().__init__()
         self.response = response
         self.logger = logger
+        self._owner = None
 
-    # def __getattribute__(self, item):
+        # def __getattribute__(self, item):
     #     if item not in ("owner", "response", "logger") and not item.startswith('__') and hasattr(self.response, item):
     #         return self.response.__getattribute__(item)
     #     else:
     #         return super(EzResponse, self).__getattribute__(item)
 
-    def __getattr__(self, item):
-        return self.response.__getattribute__(item)
+    # def __getattr__(self, item):
+    #     return self.response.__getattribute__(item)
+
+    @property
+    def owner(self):
+        return self._owner
+
+    @owner.setter
+    def owner(self, value):
+        self._owner = value
+
+    @property
+    def content(self) -> bytes:
+        return self.response.content
 
     def set(self, response: Response):
         self.response = response

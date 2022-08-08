@@ -182,8 +182,12 @@ class EzCommand:
             return
 
 
-if __name__ == '__main__':
+def main():
     EzCommand()
+
+
+if __name__ == '__main__':
+    main()
     # import argparse
     #
     # parser = argparse.ArgumentParser()
