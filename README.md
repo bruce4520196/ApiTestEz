@@ -150,7 +150,7 @@ host = https://dummyjson.com
 ```
    >*在test文件中，我们可以用过`__casefile__`显式指定用例路径，这在同一个文件夹下有多个.py测试代码的情况下很有用。但对项目来说不推荐这种做法。例：* 
  
- ```python
+```python
 from api_test_ez.core.case import UnitCase
 
 
@@ -266,73 +266,78 @@ class SomeTest(UnitCase):
         <br>
     以上面的测试用例为例，`model.py`
 
-    ```python
-    from api_test_ez.ez.serialize.fields import IntegerField, StringField, ListField
-    from api_test_ez.ez.serialize.models import ValidatorModel
-    
-    
-    class PhoneValidate(ValidatorModel):
-        id = IntegerField(required=True)
-        title = StringField(required=True)
-        category = StringField(required=True, should_in=["smartphones", "laptops"])
-        images = ListField(required=True, count_should_gte=1)
-    ```
-
-    以上模型要求：
-   1. `id`: `required=True`表明`id`为返回结果必须字段，且它的数据类型必须是`integer`，如果不符合则会引发`ValidationError`错误；
-   2. `title`: 同样，`title`也是必须字段，且它的数据类型必须是`string`；
-   3. `category`: 除了满足以上两点，`should_be="smartphones"`表明该字段返回值必须是`"smartphones"`；
-   4. `images`: 这是一个列表，且它的成员个数必须大于1。
-    <br>
-    让我们接着[上面](#EZ和[ddt](https://github.com/datadriventests/ddt)一起工作)的例子，继续修改`test_whatever.py`
-    <br>
-    ```python
-    import unittest
-    
-    from api_test_ez.core.case import UnitCase
-    from tests.case.node.models import PhoneValidate
-    
-    
-    class SomeTest(UnitCase):
-    
-        def test_something(self):
-            self.response.pair(PhoneValidate())
-    
-    
-    if __name__ == '__main__':
-        unittest.main()
-    ```
-
-    `pair`方法会对模型进行校验，并在产生错误时抛出`ValidationError`异常。<br>
-   <br>
-    **使用`marshmallow`翻译上述逻辑**<br>
-    <br>
-    `model.py`
-    ```python
-    from marshmallow import Schema, fields, INCLUDE
-    from marshmallow import validate
+```python
+from api_test_ez.ez.serialize.fields import IntegerField, StringField, ListField
+from api_test_ez.ez.serialize.models import ValidatorModel
 
 
-    class PhoneSchema(Schema):
-        id = fields.Integer(required=True, strict=True)
-        title = fields.String(required=True)
-        category = fields.String(required=True, validate=validate.OneOf(["smartphones", "laptops"]))
-        images = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
+class PhoneValidate(ValidatorModel):
+    id = IntegerField(required=True)
+    title = StringField(required=True)
+    category = StringField(required=True, should_in=["smartphones", "laptops"])
+    images = ListField(required=True, count_should_gte=1)
+```
 
-        class Meta:
-            unknown = INCLUDE
-    ```
+以上模型要求：
+1. `id`: `required=True`表明`id`为返回结果必须字段，且它的数据类型必须是`integer`，如果不符合则会引发`ValidationError`错误；
+2. `title`: 同样，`title`也是必须字段，且它的数据类型必须是`string`；
+3. `category`: 除了满足以上两点，`should_be="smartphones"`表明该字段返回值必须是`"smartphones"`；
+4. `images`: 这是一个列表，且它的成员个数必须大于1。
+<br>
+让我们接着[上面](#EZ和[ddt](https://github.com/datadriventests/ddt)一起工作)的例子，继续修改`test_whatever.py`
+<br>
+    
+```python
+import unittest
+
+from api_test_ez.core.case import UnitCase
+from tests.case.node.models import PhoneValidate
+
+
+class SomeTest(UnitCase):
+
+    def test_something(self):
+        self.response.pair(PhoneValidate())
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+`pair`方法会对模型进行校验，并在产生错误时抛出`ValidationError`异常。<br>
+<br>
+**使用`marshmallow`翻译上述逻辑**<br>
+<br>
+`model.py`
+    
+```python
+from marshmallow import Schema, fields, INCLUDE
+from marshmallow import validate
+
+
+class PhoneSchema(Schema):
+    id = fields.Integer(required=True, strict=True)
+    title = fields.String(required=True)
+    category = fields.String(required=True, validate=validate.OneOf(["smartphones", "laptops"]))
+    images = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
+
+    class Meta:
+        unknown = INCLUDE
+```
+    
     >*关于`marshmallow`的更多使用方法和解释[请点击](https://github.com/marshmallow-code/marshmallow)。*
 
     在引入`marshmallow`后，`EzResponse`提供了新的验证方法`validate`。<br>
     <br>
     在`test_whatever.py`中验证。
-    ```python
-    class SomeTest(UnitCase):
     
-        def test_something(self):
-            self.response.validate(PhoneValidate())
-    ```
+```python
+class SomeTest(UnitCase):
+
+    def test_something(self):
+        self.response.validate(PhoneValidate())
+```
+    
 - 一个稍复杂的例子
 
     现在我们对`thumbnail`做校验，确保它返回的图片是我们发送请求的产品的图片。我们之前在`request.path`中储存了请求的产品信息如`/products/1`。<br>
