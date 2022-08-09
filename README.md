@@ -364,8 +364,8 @@ class SomeTest(UnitCase):
         images = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
         thumbnail = fields.String(required=True)
 
-    class Meta:
-        unknown = INCLUDE
+        class Meta:
+            unknown = INCLUDE
 
     @validates("thumbnail")
     def validate_thumbnail(self, value):
