@@ -14,6 +14,7 @@ install_requires = [
     'pytest~=7.1.2',
     'openpyxl==3.0.10',
     'BeautifulReport~=0.1.3',
+    'marshmallow~=3.16.0'
 ]
 
 

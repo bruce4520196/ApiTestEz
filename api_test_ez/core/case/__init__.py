@@ -12,6 +12,7 @@ import tablib
 import ast
 from ddt import ddt, data, feed_data
 
+from api_test_ez.core.case.errors import UrlNoneException
 from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
@@ -157,3 +158,5 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
             self.response.set(do(url=url, **{body_type: body}))
             http.close()
             self.logger.debug(repr(self.response))
+        else:
+            raise UrlNoneException()
