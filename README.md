@@ -96,7 +96,7 @@ url = http://www.baidu.com
      unittest.main()
   ```
 ---
-#### EZ和[ddt](https://github.com/datadriventests/ddt)一起工作
+#### <span id="jump">EZ和[ddt](https://github.com/datadriventests/ddt)一起工作</span>
    EZ支持`ddt`
    假设我们有多个接口需要测试。（这里我们使用一些fake api：https://dummyjson.com/products/<page> ）。
    我们得到10个需要测试的接口 https://dummyjson.com/products/1 ~ https://dummyjson.com/products/10 。它们将返回10种不同型号的手机信息。<br>
@@ -284,7 +284,10 @@ class PhoneValidate(ValidatorModel):
 3. `category`: 除了满足以上两点，`should_be="smartphones"`表明该字段返回值必须是`"smartphones"`；
 4. `images`: 这是一个列表，且它的成员个数必须大于1。
 <br>
-让我们接着[上面](#EZ和[ddt](https://github.com/datadriventests/ddt)一起工作)的例子，继续修改`test_whatever.py`
+    
+    
+让我们接着 [上面](#jump) 的例子，继续修改`test_whatever.py`。
+    
 <br>
     
 ```python
