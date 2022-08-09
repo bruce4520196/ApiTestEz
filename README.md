@@ -285,6 +285,7 @@ class SomeTest(UnitCase):
    4. `images`: 这是一个列表，且它的成员个数必须大于1。
     <br>
     让我们接着[上面](#EZ和[ddt](https://github.com/datadriventests/ddt)一起工作)的例子，继续修改`test_whatever.py`
+    <br>
     ```python
     import unittest
     
@@ -301,6 +302,7 @@ class SomeTest(UnitCase):
     if __name__ == '__main__':
         unittest.main()
     ```
+
     `pair`方法会对模型进行校验，并在产生错误时抛出`ValidationError`异常。<br>
    <br>
     **使用`marshmallow`翻译上述逻辑**<br>
