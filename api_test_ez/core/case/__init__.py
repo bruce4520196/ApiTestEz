@@ -12,7 +12,7 @@ import tablib
 import ast
 from ddt import ddt, data, feed_data
 
-from api_test_ez.core.case.errors import UrlNoneException
+from api_test_ez.core.case.errors import HttpRequestException
 from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
@@ -159,4 +159,8 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
             http.close()
             self.logger.debug(repr(self.response))
         else:
-            raise UrlNoneException()
+            if not url:
+                raise HttpRequestException(err="`url` can not be None.")
+            else:
+                raise HttpRequestException(err=f"Not support request method `{method}`")
+

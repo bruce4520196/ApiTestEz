@@ -27,18 +27,15 @@ class EzResponse(Response):
         self.logger = logger
         self._owner = None
 
-        # def __getattribute__(self, item):
-    #     if item not in ("owner", "response", "logger") and not item.startswith('__') and hasattr(self.response, item):
-    #         return self.response.__getattribute__(item)
-    #     else:
-    #         return super(EzResponse, self).__getattribute__(item)
+    def __getattribute__(self, item):
+        if item not in ("owner", "response", "logger") and not item.startswith('__') and hasattr(self.response, item):
+            return self.response.__getattribute__(item)
+        else:
+            return super(EzResponse, self).__getattribute__(item)
 
-    # def __getattr__(self, item):
-    #     return self.response.__getattribute__(item)
-
-    @property
-    def content(self) -> bytes:
-        return self.response.content
+    # @property
+    # def content(self) -> bytes:
+    #     return self.response.content
 
     def set(self, response: Response):
         self.response = response
@@ -46,18 +43,27 @@ class EzResponse(Response):
     @property
     @json_bean
     def bean(self):
-        return self.json()
+        if self.response:
+            return self.json()
+        else:
+            return None
 
     def pair(self, model: ValidatorModel, full_repr=False):
-        validate_result = model.validate(self.response.json(), full_repr)
-        if 'ValidationError' in str(validate_result):
-            validation_error = ValidationError(f'[{self.owner}] {validate_result}')
-            self.logger.error(validation_error)
-            raise validation_error
+        if self.response:
+            validate_result = model.validate(self.response.json(), full_repr)
+            if 'ValidationError' in str(validate_result):
+                validation_error = ValidationError(f'[{self.owner}] {validate_result}')
+                self.logger.error(validation_error)
+                raise validation_error
+        else:
+            raise ValidationError(f'[{self.owner}] {self.__str__()}')
 
     def validate(self, schema: Schema):
         """Validate from marshmallow."""
-        return schema.load(self.response.json())
+        if self.response:
+            return schema.load(self.response.json())
+        else:
+            raise ValidationError(f'[{self.owner}] {self.__str__()}')
 
     def __str__(self):
         if self.response:
@@ -65,6 +71,6 @@ class EzResponse(Response):
                    f"{self.response.text!r}"
         else:
             return f"<{self.__class__.__name__}> {self.owner}: response is None, " \
-                   f"maybe you didn't send the request?"
+                   f"maybe you didn't send the request or request failed?"
 
     __repr__ = __str__

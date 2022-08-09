@@ -7,9 +7,5 @@
 
 
 class HttpRequestException(Exception):
-    pass
-
-
-class UrlNoneException(HttpRequestException):
-    def __init__(self, err="`url` can not be None."):
+    def __init__(self, err):
         Exception.__init__(self, err)

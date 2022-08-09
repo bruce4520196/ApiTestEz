@@ -446,15 +446,16 @@ report.run()
 
 ### ez.cfg
 
-| Key      | Desc     | Default                                | Storage Location |
-|----------|----------|----------------------------------------|------------------|
-| url      | 请求链接     | None                                   | request.http     |
-| host     | 请求host   | 当url为None时，url=host+path               | request.http     |
-| path     | 请求path   | 当url为None时，url=host+path               | request.http     |
-| method   | 请求方式     | GET                                    | request.http     |
-| body     | 请求body   | None                                   | request.http     |
-| body     | 请求body格式 | 默认为data，支持json，files，stream详见requests库 | request.http     |
-| *others* | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | request.meta     |
+| Key            | Desc     | Default                                | Storage Location | Tag    |
+|----------------|----------|----------------------------------------|------------------|--------|
+| url            | 请求链接     | None                                   | request.http     | [HTTP] |
+| host           | 请求host   | 当url为None时，url=host+path               | request.http     | [HTTP] |
+| path           | 请求path   | 当url为None时，url=host+path               | request.http     | [HTTP] |
+| method         | 请求方式     | GET                                    | request.http     | [HTTP] |
+| body           | 请求body   | None                                   | request.http     | [HTTP] |
+| body           | 请求body格式 | 默认为data，支持json，files，stream详见requests库 | request.http     | [HTTP] |
+| *others*       | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | request.meta     | [META] |
+| case_filepath  | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | __casefile__     | [CASE] |
 
 `config`优先级：
 - `default`: 0,
