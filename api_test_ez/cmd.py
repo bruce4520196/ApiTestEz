@@ -120,8 +120,6 @@ class EzCommand:
             return
         args, unknown_args = ez_parser.parse_known_args(argv)
 
-        print(args)
-        print(unknown_args)
         cases_path = args.cases_path
         if not cases_path:
             print('EZ COMMAND ERROR: `cases_path` not found. See: \n')
@@ -169,8 +167,10 @@ class EzCommand:
                 else:
                     print(f'EZ COMMAND WARNING: `{args.report_style}` is not supported `report_style`, '
                           f'run tests as dry-run. See: \n')
+                    ez_parser.print_help()
             else:
                 print(f'EZ COMMAND WARNING: `report_dir` does not set, run tests as dry-run. See: \n')
+                ez_parser.print_help()
             DryRun(args.cases_path).run()
             return
 

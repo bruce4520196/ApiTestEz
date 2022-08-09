@@ -22,6 +22,7 @@ ApiTestEz（以下简称EZ）主要提供以下3方面的核心功能：<br>
        |-- EzTestDemo
            |-- <project_name>
            |   |-- test_whatever.py
+           |   |-- ez.cfg (optional: module priority)
            |-- settings
            |-- project.cfg
 
@@ -45,7 +46,8 @@ class SomeTest(UnitCase):
 if __name__ == '__main__':
    unittest.main()
 
-   ```
+```
+
 ---
 #### 完整项目
 
@@ -462,6 +464,8 @@ report.run()
 - `case`: 40,
 - `command`: 50,
 
+>*`command`优先级最高。而对于`ez.cfg`配置文件，越靠近用例层优先级越高。*
+
 ### marshmallow之EzSchema
 
 在`EzSchema`中，你可以动态修改字段的校验规则。
@@ -483,14 +487,33 @@ if __name__ == '__main__':
     ps.title.validate = validate.OneOf(["smartphones", "laptops"])
 ```
 
+### `ez`命令行
+EZ目前仅支持`unittest`运行测试用例。它除了支持所有[`unittest`](https://docs.python.org/zh-cn/3/library/unittest.html#command-line-interface)命令行参数外，还支持以下设置内容：
 
+**位置参数**：
+- `action`: 指定`EZ`命令的行为，`run`或`dry-run`。<br>
+  - `run`: 运行测试用例并生成报告。（当为设置report目录时，会以`dry-run`运行）
+  - `dry-run`: 试运行测试用例。
+- `cases_path`: 要运行的用例脚本路径。
+
+**可选参数**
+- `-h`, `--help`: 帮助文档
+- `-version`, `--version`: 显示`ApiTestEz`版本号
+- `-fk`, `--framework`: 如何运行测试。`unittest`或`pytest`(暂未支持)，默认`unittest`.
+- `-cfg`, `--config`: 设置配置，优先级为`command`。例：*-cfg host=127.0.0.1*。
+- `-cfgf`, `--config-file`: 设置配置文件，必须是`ez.cfg`格式的文件，优先级`command`。
+- `-rs`, `--report-style`: 报告样式选择。`html`(即: HtmlReporter)或`br`(即: BRReporter)。默认`br`。
+- `-rt`, `--report-theme`: BRReporter主题. 默认: `theme_default`。支持: `theme_default`, `theme_default`,`theme_default`, `theme_cyan`, `theme_candy`, `theme_memories`。
+- `-rf`, `--report-file`: 报告文件路径。
+
+>*例：ez run <path_or_dir_to_case_script_or> -cfg host=127.0.0.1 -rs html*
 
 ### TODO
 1.  用例支持入参，例：f"{'X-Forwarded-For': ${province_ip} }"
 2.  ~~url拆分host + path~~
 3.  ~~报告~~
 4.  ~~序列化断言实现~~
-5.  cmdline
+5.  ~~cmdline~~
 6.  项目构建工具：ez create xxxx
 7.  基于pytest的用例实现
 8.  ~~pypi setup~~
