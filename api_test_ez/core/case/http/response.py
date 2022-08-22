@@ -12,7 +12,7 @@ from requests import Response
 from api_test_ez.ez.decorator.jsonbean import json_bean
 from api_test_ez.ez.serialize.errors import ValidationError
 from api_test_ez.ez.serialize.models import ValidatorModel
-from marshmallow import Schema
+from marshmallow import Schema, utils
 
 from api_test_ez.project import get_ez_logger, get_ez_settings
 
@@ -61,6 +61,20 @@ class EzResponse(Response):
     def validate(self, schema: Schema):
         """Validate from marshmallow."""
         if self.response:
+            # Reload the `validators` of the `fields` which in `schema`.
+            # In case the `validate` is modified.
+            for field_name, field_obj in schema.declared_fields.items():
+                if field_obj.validate is None:
+                    field_obj.validators = []
+                elif callable(field_obj.validate):
+                    field_obj.validators = [field_obj.validate]
+                elif utils.is_iterable_but_not_string(field_obj.validate):
+                    field_obj.validators = list(field_obj.validate)
+                else:
+                    raise ValueError(
+                        "The 'validate' parameter must be a callable "
+                        "or a collection of callables."
+                    )
             return schema.load(self.response.json())
         else:
             raise ValidationError(f'[{self.owner}] {self.__str__()}')

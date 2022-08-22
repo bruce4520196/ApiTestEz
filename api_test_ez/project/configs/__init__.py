@@ -16,9 +16,9 @@ from api_test_ez.ez import get_config
 
 CONFIG_PRIORITIES = {
     'default': 0,
-    'package': 10,
+    'project': 10,
     'module': 20,
-    'project': 30,
+    'package': 30,
     'case': 40,
     'command': 50,
 }
@@ -79,6 +79,8 @@ class BaseConfigs(MutableMapping):
                 try:
                     value = ast.literal_eval(value)
                 except SyntaxError:
+                    pass
+                except ValueError:
                     pass
                 self.set(key.lower(), value, priority=priority)
 
