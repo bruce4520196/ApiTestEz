@@ -71,6 +71,15 @@ if __name__ == '__main__':
  <br>
  *ez.cfg*是EZ框架的核心功能之一。下面，通过使用ez.cfg，我们来完成一个简单的请求。<br>
 
+
+ `project.cfg`
+
+*project.cfg*中存放`settings.py`可**导入**的路径，如将`settings.py`和`project.cfg`放置在同一路径，则按如下写法：
+```ini
+[settings]
+default = settings
+```
+
  `ez.cfg`
 
 ```ini
@@ -148,17 +157,8 @@ host = https://dummyjson.com
  if __name__ == '__main__':
      unittest.main()
 ```
-   >*在test文件中，我们可以用过`__casefile__`显式指定用例路径，这在同一个文件夹下有多个.py测试代码的情况下很有用。但对项目来说不推荐这种做法。例：* 
- 
-```python
-from api_test_ez.core.case import UnitCase
 
 
-class SomeTest(UnitCase):
-   __casefile__ = "/<some path>/case.xlsx"
-```
-
----
 
 ---
 ### EZ中的组件
@@ -465,7 +465,6 @@ report.run()
 | body           | 请求body   | None                                   | request.http     | [HTTP] |
 | body           | 请求body格式 | 默认为data，支持json，files，stream详见requests库 | request.http     | [HTTP] |
 | *others*       | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | request.meta     | [META] |
-| case_filepath  | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | __casefile__     | [CASE] |
 
 `config`优先级：
 - `default`: 0,

@@ -76,10 +76,10 @@ class CaseMetaclass(type):
 
                 new_attrs = {}
                 # Mapping test methods and data functions
-                for name, func in attrs.items():
-                    if name.startswith('test'):
+                for func_name, func in attrs.items():
+                    if func_name.startswith('test'):
                         for ddt_func_name in ddt_func_names:
-                            test_name = ddt_func_name.replace('load_data', name)
+                            test_name = ddt_func_name.replace('load_data', func_name)
                             # Let's set a `%data_owner` attr to test function
                             # Then we can find the data later.
 
@@ -89,7 +89,7 @@ class CaseMetaclass(type):
                             new_attrs.update({test_name: _func})
                     else:
                         # other methods should be added without modified
-                        new_attrs.update({name: func})
+                        new_attrs.update({func_name: func})
 
                 return super_new(mcs, name, bases, new_attrs)
 
