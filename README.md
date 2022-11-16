@@ -511,7 +511,7 @@ EZ目前仅支持`unittest`运行测试用例。它除了支持所有[`unittest`
 - `action`: 指定`EZ`命令的行为，`run`或`dry-run`。<br>
   - `run`: 运行测试用例并生成报告。（当为设置report目录时，会以`dry-run`运行）
   - `dry-run`: 试运行测试用例。
-- `cases_path`: 要运行的用例脚本路径。
+- `cases_path`: 要运行的用例**脚本**路径。
 
 **可选参数**
 - `-h`, `--help`: 帮助文档
@@ -523,7 +523,7 @@ EZ目前仅支持`unittest`运行测试用例。它除了支持所有[`unittest`
 - `-rt`, `--report-theme`: BRReporter主题. 默认: `theme_default`。支持: `theme_default`, `theme_default`,`theme_default`, `theme_cyan`, `theme_candy`, `theme_memories`。
 - `-rf`, `--report-file`: 报告文件路径。
 
->*例：ez run <path_or_dir_to_case_script_or> -cfg host=127.0.0.1 -rs html*
+>*例：ez run <path_or_dir_to_case_script> -cfg host=127.0.0.1 -rs html*
 
 ### TODO
 1.  用例支持入参，例：f"{'X-Forwarded-For': ${province_ip} }"

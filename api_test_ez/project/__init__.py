@@ -52,7 +52,7 @@ def init_project(project='default'):
     if cfg.has_option('settings', project):
         project_settings_path = cfg.get('settings', project)
         os.environ[ENV_EZ_SETTINGS_MODULE] = project_settings_path
-        os.environ[ENV_EZ_PROJECT_DIR] = os.path.abspath(os.path.dirname(project_settings_path))
+        os.environ[ENV_EZ_PROJECT_DIR] = os.path.abspath(os.path.dirname(project_cfg_path))
         sys.path.append(os.environ[ENV_EZ_PROJECT_DIR])
 
 
