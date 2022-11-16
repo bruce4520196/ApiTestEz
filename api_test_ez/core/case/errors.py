@@ -9,3 +9,8 @@
 class HttpRequestException(Exception):
     def __init__(self, err):
         Exception.__init__(self, err)
+
+
+class CaseFileNotFoundException(Exception):
+    def __init__(self, err):
+        Exception.__init__(self, err)

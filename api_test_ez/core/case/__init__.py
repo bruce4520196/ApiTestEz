@@ -5,24 +5,28 @@
 # @desc    :
 """
 import copy
-import json
 import os
 
 import tablib
-import ast
 from ddt import ddt, data, feed_data
 
-from api_test_ez.core.case.errors import HttpRequestException
+from api_test_ez.core.case.errors import HttpRequestException, CaseFileNotFoundException
 from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
 
 from api_test_ez.ez import Http
-from api_test_ez.project import Project
+from api_test_ez.project import Project, ENV_EZ_PROJECT_DIR
 
 
 def load_test_data(data_filename):
     if isinstance(data_filename, str):
+        # 增加绝对路径和相对路径兼容
+        if not os.path.exists(data_filename):
+            data_filename = os.path.join(os.environ[ENV_EZ_PROJECT_DIR], data_filename)
+            if not os.path.exists(data_filename):
+                raise CaseFileNotFoundException(err=f'File not found for both relative and absolute paths: '
+                                                    f'{data_filename}')
         with open(data_filename, 'rb') as f:
             data_set = tablib.Dataset().load(f.read())
             return data_set.dict

@@ -103,6 +103,10 @@ class EzCommand:
             ez_parser.print_help()
             return
 
+        if argv[0] == '-version' or argv[0] == '--version':
+            ez_parser.parse_args()
+            return
+
         if argv[0] not in EZ_SUPPORT_ACTION:
             print(f'EZ COMMAND ERROR: unknown action-word `{argv[0]}`. Support word must in {EZ_SUPPORT_ACTION}. See: \n')
             ez_parser.print_help()
@@ -190,12 +194,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # import argparse
-    #
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("square", type=int,
-    #                     help="display a square of a given number")
-    # parser.add_argument("-v", "--verbose", action="store_true",
-    #                     help="increase output verbosity")
-    # args = parser.parse_args(['--verbose', '4'])
-    # print(args)
