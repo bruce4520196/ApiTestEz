@@ -1,6 +1,21 @@
 # ApiTestEz
 
 
+#### 1.0.26 更新
+
+1. 增加自定义用例数据加载方式，例：
+```python
+from api_test_ez.core.case.frame.frame_case_loader import CaseLoaderMiddleware
+
+class DBCaseLoaderMiddleware(CaseLoaderMiddleware):
+
+    def load_test_data(self) -> list:
+        # do something
+        data_set = [{}, {}]
+        return data_set
+```
+
+
 #### 1.0.24 更新
 
 1. 修复`-version`命令行问题
@@ -374,23 +389,23 @@ class SomeTest(UnitCase):
         class Meta:
             unknown = INCLUDE
 
-    @validates("thumbnail")
-    def validate_thumbnail(self, value):
-        request = self.context.get("request")
-        if request:
-            if request.path not in value:
-                raise ValidationError(f"The `thumbnail` should contain `{request.path!r}`.")
-        else:
-            raise ValidationError("Get `request` object fail.")
+        @validates("thumbnail")
+        def validate_thumbnail(self, value):
+            request = self.context.get("request")
+            if request:
+                if request.path not in value:
+                    raise ValidationError(f"The `thumbnail` should contain `{request.path!r}`.")
+            else:
+                raise ValidationError("Get `request` object fail.")
 
-    @validates_schema
-    def validate_category(self, data, **kwargs):
-        if data['id'] <= 5:
-            if data['category'] != "smartphones":
-                raise ValidationError(f"Expect `smartphones`, but `{data['category']!r}` found.")
-        else:
-            if data['category'] != "laptops":
-                raise ValidationError(f"Expect `smartphones`, but `{data['category']!r}` found.")
+        @validates_schema
+        def validate_category(self, data, **kwargs):
+            if data['id'] <= 5:
+                if data['category'] != "smartphones":
+                    raise ValidationError(f"Expect `smartphones`, but `{data['category']!r}` found.")
+            else:
+                if data['category'] != "laptops":
+                    raise ValidationError(f"Expect `smartphones`, but `{data['category']!r}` found.")
   ```
     由于涉及到了对外部变量的依赖，我们需要在断言前动态修改模型属性。<br>
     <br>
@@ -463,15 +478,17 @@ report.run()
 
 ### ez.cfg
 
-| Key            | Desc     | Default                                | Storage Location | Tag    |
-|----------------|----------|----------------------------------------|------------------|--------|
-| url            | 请求链接     | None                                   | request.http     | [HTTP] |
-| host           | 请求host   | 当url为None时，url=host+path               | request.http     | [HTTP] |
-| path           | 请求path   | 当url为None时，url=host+path               | request.http     | [HTTP] |
-| method         | 请求方式     | GET                                    | request.http     | [HTTP] |
-| body           | 请求body   | None                                   | request.http     | [HTTP] |
-| body           | 请求body格式 | 默认为data，支持json，files，stream详见requests库 | request.http     | [HTTP] |
-| *others*       | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中     | request.meta     | [META] |
+| Key           | Desc     | Default                                                                                           | Storage Location | Tag    |
+|---------------|----------|---------------------------------------------------------------------------------------------------|------------------|--------|
+| url           | 请求链接     | None                                                                                              | request.http     | [HTTP] |
+| host          | 请求host   | 当url为None时，url=host+path                                                                          | request.http     | [HTTP] |
+| path          | 请求path   | 当url为None时，url=host+path                                                                          | request.http     | [HTTP] |
+| method        | 请求方式     | GET                                                                                               | request.http     | [HTTP] |
+| body          | 请求body   | None                                                                                              | request.http     | [HTTP] |
+| body          | 请求body格式 | 默认为data，支持json，files，stream详见requests库                                                            | request.http     | [HTTP] |
+| case_load     | 用例读取模块   | 如果存在将以指定模块加载用例数据，格式：<module>.<case_loader_class>，例：your_project.path.modul.DBCaseLoaderMiddleware | NA               | [CASE] |
+| case_filepath | 用例路径     | 用例文件绝对或相对路径，默认将以FileCaseLoaderMiddleware加载测试用例数据                                                  | NA               | [CASE] |
+| *others*      | 其他任意配置项  | 如果存在将以key, value形式存储在request.meta中                                                                | request.meta     | [META] |
 
 `config`优先级：
 - `default`: 0,

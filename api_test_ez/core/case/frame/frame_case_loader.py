@@ -8,7 +8,7 @@ from api_test_ez.project import ENV_EZ_PROJECT_DIR
 
 class CaseLoaderMiddleware(object):
 
-    def load_test_data(self) -> dict:
+    def load_test_data(self) -> list:
         raise NotImplementedError
 
 
@@ -17,7 +17,7 @@ class FileCaseLoaderMiddleware(object):
     def __init__(self, data_filename):
         self.data_filename = data_filename
 
-    def load_test_data(self) -> dict:
+    def load_test_data(self) -> list:
         if isinstance(self.data_filename, str):
             # 增加绝对路径和相对路径兼容
             if not os.path.exists(self.data_filename):
