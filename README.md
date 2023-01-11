@@ -10,6 +10,7 @@ from api_test_ez.core.case.frame.frame_case_loader import CaseLoaderMiddleware
 class DBCaseLoaderMiddleware(CaseLoaderMiddleware):
 
     def load_test_data(self) -> list:
+        configs = self.configs  # ez project configs
         # do something
         data_set = [{}, {}]
         return data_set

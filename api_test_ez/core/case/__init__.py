@@ -103,13 +103,12 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
         case_loader_class_str = case_loader_str_list[-1]
         case_loader_module = import_module(case_loader_module_str)
         case_loader_class = getattr(case_loader_module, case_loader_class_str)
-        case_loader = case_loader_class()
+
     else:
         # default
-        case_loader_module = FileCaseLoaderMiddleware
-        __casefile__ = configs.get("case_filepath")
-        case_loader = case_loader_module(__casefile__)
+        case_loader_class = FileCaseLoaderMiddleware
 
+    case_loader = case_loader_class(configs)
     data_set = case_loader.load_test_data()
 
     # set request here, bcz the data in `ez.config` can not be load in again.
