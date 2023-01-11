@@ -173,7 +173,7 @@ class EzCommand:
                           f'run tests as dry-run. See: \n')
                     ez_parser.print_help()
             else:
-                print(f'EZ COMMAND WARNING: `report_dir` does not set, run tests as dry-run. See: \n')
+                print(f'EZ COMMAND WARNING: `report_dir` does not set, run tests as dry-run.\n')
                 # ez_parser.print_help()
             DryRun(args.cases_path).run()
             return

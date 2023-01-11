@@ -6,32 +6,18 @@
 """
 import copy
 import os
+from importlib import import_module
 
-import tablib
 from ddt import ddt, data, feed_data
 
 from api_test_ez.core.case.errors import HttpRequestException, CaseFileNotFoundException
+from api_test_ez.core.case.frame.frame_case_loader import FileCaseLoaderMiddleware
 from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
 
 from api_test_ez.ez import Http
-from api_test_ez.project import Project, ENV_EZ_PROJECT_DIR
-
-
-def load_test_data(data_filename):
-    if isinstance(data_filename, str):
-        # 增加绝对路径和相对路径兼容
-        if not os.path.exists(data_filename):
-            data_filename = os.path.join(os.environ[ENV_EZ_PROJECT_DIR], data_filename)
-            if not os.path.exists(data_filename):
-                raise CaseFileNotFoundException(err=f'File not found for both relative and absolute paths: '
-                                                    f'{data_filename}')
-        with open(data_filename, 'rb') as f:
-            data_set = tablib.Dataset().load(f.read())
-            return data_set.dict
-    else:
-        return []
+from api_test_ez.project import Project
 
 
 def ez_ddt_setter(cls):
@@ -107,9 +93,25 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
     ez_project = Project(ez_file_path=case_path_dir, env_name=os.path.basename(case_path_dir))
     configs = ez_project.configs
     logger = ez_project.logger
+
     # load test data
-    __casefile__ = configs.get("case_filepath")
-    data_set = load_test_data(__casefile__)
+    case_loader_str = configs.get("case_loader")
+    if case_loader_str:
+        # Case-loader define as <module>.<case_loader_class>
+        case_loader_str_list = case_loader_str.split('.')
+        case_loader_module_str = ".".join(case_loader_str_list[:-1])
+        case_loader_class_str = case_loader_str_list[-1]
+        case_loader_module = import_module(case_loader_module_str)
+        case_loader_class = getattr(case_loader_module, case_loader_class_str)
+        case_loader = case_loader_class()
+    else:
+        # default
+        case_loader_module = FileCaseLoaderMiddleware
+        __casefile__ = configs.get("case_filepath")
+        case_loader = case_loader_module(__casefile__)
+
+    data_set = case_loader.load_test_data()
+
     # set request here, bcz the data in `ez.config` can not be load in again.
 
     __autoRequest__ = configs.get("auto_request")
