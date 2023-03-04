@@ -1,5 +1,9 @@
 # ApiTestEz
 
+#### 1.0.28 更新
+
+1. [新增用例生成器](#jump_case)`CaseBuilderSchema`.
+2. 修复命令行Bug.
 
 #### 1.0.26 更新
 
@@ -112,21 +116,23 @@ url = http://www.baidu.com
         
  `test_whatever.py`
         
- ```python
- import unittest
+```python
 
- from api_test_ez.core.case import UnitCase
+import unittest
 
-
- class SomeTest(UnitCase):
-
-     def test_something(self):
-         assert self.response.status_code == 200
+from api_test_ez.core.case import UnitCase
 
 
- if __name__ == '__main__':
-     unittest.main()
-  ```
+class SomeTest(UnitCase):
+
+    def test_something(self):
+        assert self.response.status_code == 200
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
 ---
 #### <span id="jump">EZ和[ddt](https://github.com/datadriventests/ddt)一起工作</span>
    EZ支持`ddt`
@@ -166,19 +172,19 @@ host = https://dummyjson.com
    
 在`test_whatever.py`中，现阶段不做出改变，我们将在后面的介绍中深入认识[断言](#断言)。
 ```python
- import unittest
+import unittest
 
- from api_test_ez.core.case import UnitCase
-
-
- class SomeTest(UnitCase):
-
-     def test_something(self):
-         assert self.response.status_code == 200
+from api_test_ez.core.case import UnitCase
 
 
- if __name__ == '__main__':
-     unittest.main()
+class SomeTest(UnitCase):
+
+    def test_something(self):
+        assert self.response.status_code == 200
+
+
+if __name__ == '__main__':
+    unittest.main()
 ```
 
 
@@ -205,20 +211,20 @@ host = https://dummyjson.com
    `doRequest`和`afterRequest`仅在*自动请求*（即`__autoRequest__ == 'on'`）时被调用。而`doRequest`可以显式调用，同样的，`__autoRequest__`也可以在测试代码中显式指定。<br>
 
 ---
-   - `beforeRequest`
+- `beforeRequest`
 
-      通常我们在`beforeRequest`中完成对请求数据的封装。<br>
-       1. 显式指定url
-     ```python
-        def beforeRequest(self):
-            self.request.url = "http://www.baidu.com"
-     ```
-      2. 在请求前需要通过另一个请求得到需要传递的参数
-     ```python
-        def beforeRequest(self):
-            resp = self.request.http.get('https://somehost.com/login').json()
-            self.body = {'token': resp.get('token')}
-     ```
+   通常我们在`beforeRequest`中完成对请求数据的封装。<br>
+    1. 显式指定url
+  ```python
+    def beforeRequest(self):
+        self.request.url = "http://www.baidu.com"
+  ```
+   2. 在请求前需要通过另一个请求得到需要传递的参数
+  ```python
+     def beforeRequest(self):
+         resp = self.request.http.get('https://somehost.com/login').json()
+         self.body = {'token': resp.get('token')}
+  ```
       
    - `afterRequest`
         
@@ -542,6 +548,225 @@ EZ目前仅支持`unittest`运行测试用例。它除了支持所有[`unittest`
 - `-rf`, `--report-file`: 报告文件路径。
 
 >*例：ez run <path_or_dir_to_case_script> -cfg host=127.0.0.1 -rs html*
+
+### <span id="jump_case">用例生成器</span>
+假如我们有一个**注册**接口需要测试，接口有4个字段需要传入（`username`/`password`/`invite_code`/`trust_value`），如下：
+
+| keys        | value1         | value2      | value3        |
+|-------------|----------------|-------------|---------------|
+| username    | test@gmail.com | 13300000000 | bruce_william |
+| password    | testgmail      | 123456      | brucewil&     |
+| invite_code | gmail_ivt      | phone_ivt   | bruce_ivt     |
+| trust_value | 30             | 100         | 1             |
+
+抛开密码校验场景不考虑，我们需要进行以下场景测试：
+1. `username`和`invite_code`的交叉使用是否能正常注册（假设程序要求邮箱、手机号、用户名注册的用户邀请码要一一对应）；
+2. `trust_value`的边界值是否校验正确（假设使用手机号注册不限制用户年龄，其他情况需要满足年龄：100<`trust_value`）；
+3. `trust_value`和`invite_code`的判定关系是否正常（假设`phone_ivt`邀请的用户，只需要满足信任值`trust_value`>=30）
+
+针对如上场景，我们可能需要列出所有测试数据，并穷举所有测试情况，并生成用例，如果将`password`考虑进去，那会使得整个用例设计过程异常复杂。
+
+好在，现在`EZ`提供了这样的功能。
+
+- 创建用例模型
+```python
+from api_test_ez.ez.case_builder.schema import CaseBuilderSchema
+from api_test_ez.ez.case_builder.fields import (
+    IterableField
+)
+
+
+class SignupApiCaseSchema(CaseBuilderSchema):
+    username = IterableField(value=["test@gmail.com", "13300000000", "bruce_william"], iterative_mode='EXH')
+    invite_code = IterableField(value=["gmail_ivt", "phone_ivt", "bruce_ivt"], iterative_mode='EXH')
+    trust_value = IterableField(value=[30, 100, 1], iterative_mode='EXH')
+```
+
+`EZ.CaseBuilderSchema`目前支持3种字段类型：`UniqueField`/`IterableField`/`FixedField`
+
+`IterableField`：会参与计算的字段，`value`必须是一个可迭代的对象。`fmt`目前支持两种计算方式：`ORT`(Orthogonal，正交)和`EXH`（Exhaustive，穷举）。
+
+`UniqueField`：唯一且自增的字段，会按用例条数及提供的`value`格式化为自增字符串，通常用作用例标题，例：case_1/case2/...。
+
+`FixedField`：固定的字段，会自动填充到每条用例中。
+
+- 生成用例
+
+```python
+signup_cs = SignupApiCaseSchema()
+signup_cs.build()
+```
+>[
+>
+>[ {'username': 'test@gmail.com'}, {'invite_code': 'gmail_ivt'}, {'trust_value': 30}], 
+> 
+>[ {'username': 'test@gmail.com'}, {'invite_code': 'gmail_ivt'}, {'trust_value': 100}], 
+> 
+> ...
+> 
+> ]
+
+- 保存用例
+```python
+signup_cs.save(file_path="<case_path_to_save>", fmt="xlsx")
+```
+>![img_1.png](resource/img_1.png)
+
+>*`save`方法使用`tablib`库作为导出方法，它同样可以导出其他其他类型的文件，如：fmt="csv", fmt="yml", fmt="json"等`tablib`支持的所有方式。*
+
+- 绑定相关字段
+
+接下来我们要说到上面被我们忽略的`password`。 除了以上导出字段，我们可能还希望将账号和密码绑定起来，`CaseBuilderSchema`中支持嵌套模型的灵活配置方式
+
+*方式1*
+```python
+from api_test_ez.ez.case_builder.schema import CaseBuilderSchema
+from api_test_ez.ez.case_builder.fields import (
+    IterableField,
+    FixedField
+)
+
+    
+class SignupApiCaseSchema(CaseBuilderSchema):
+    userinfo = IterableField(value=[
+        [
+            {"username": "test@gmail.com"},
+            {"password": "testgmail"},
+        ],         
+        [
+            {"username": "13300000000"},
+            {"password": "123456"},
+        ],         
+        [
+            {"username": "bruce_william"},
+            {"password": "brucewil&"},
+        ],
+    ], iterative_mode='EXH')
+    invite_code = IterableField(value=["gmail_ivt", "phone_ivt", "bruce_ivt"], iterative_mode='EXH')
+    trust_value = IterableField(value=[30, 100, 1], iterative_mode='EXH')
+```
+
+
+*方式2*
+```python
+from api_test_ez.ez.case_builder.schema import CaseBuilderSchema
+from api_test_ez.ez.case_builder.fields import (
+    IterableField,
+    FixedField
+)
+
+
+class MailUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="test@gmail.com")
+    password = FixedField(value="testgmail")
+
+    
+class PhoneUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="13300000000")
+    password = FixedField(value="123456")
+
+    
+class NormalUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="bruce_william")
+    password = FixedField(value="brucewil&")
+
+    
+class SignupApiCaseSchema(CaseBuilderSchema):
+    userinfo = IterableField(value=[MailUserCaseSchema, PhoneUserCaseSchema, NormalUserCaseSchema], iterative_mode='EXH')
+    invite_code = IterableField(value=["gmail_ivt", "phone_ivt", "bruce_ivt"], iterative_mode='EXH')
+    trust_value = IterableField(value=[30, 100, 1], iterative_mode='EXH')
+```
+
+- 保存用例
+```python
+signup_cs.save(file_path="<case_path_to_save>", fmt="xlsx")
+```
+
+>![img_3.png](resource/img_3.png)
+
+- 加入用例标题
+```python
+from api_test_ez.ez.case_builder.schema import CaseBuilderSchema
+from api_test_ez.ez.case_builder.fields import (
+    IterableField,
+    FixedField,
+    UniqueField
+)
+
+
+class MailUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="test@gmail.com")
+    password = FixedField(value="testgmail")
+
+    
+class PhoneUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="13300000000")
+    password = FixedField(value="123456")
+
+    
+class NormalUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="bruce_william")
+    password = FixedField(value="brucewil&")
+
+    
+class SignupApiCaseSchema(CaseBuilderSchema):
+    userinfo = IterableField(value=[MailUserCaseSchema, PhoneUserCaseSchema, NormalUserCaseSchema], iterative_mode='EXH')
+    invite_code = IterableField(value=["gmail_ivt", "phone_ivt", "bruce_ivt"], iterative_mode='EXH')
+    trust_value = IterableField(value=[30, 100, 1], iterative_mode='EXH')
+    case_name = UniqueField(value="signup_case")
+```
+
+- 保存
+```python
+signup_cs.save(file_path="<case_path_to_save>", fmt="xlsx")
+```
+
+>![img_4.png](resource/img_4.png)
+
+- 使用正交模式
+
+除了穷举，你还可以使用正交的方式，这样会使得你的用例变得更少
+
+```python
+from api_test_ez.ez.case_builder.schema import CaseBuilderSchema
+from api_test_ez.ez.case_builder.fields import (
+    IterableField,
+    FixedField,
+    UniqueField
+)
+
+
+class MailUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="test@gmail.com")
+    password = FixedField(value="testgmail")
+
+    
+class PhoneUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="13300000000")
+    password = FixedField(value="123456")
+
+    
+class NormalUserCaseSchema(CaseBuilderSchema):
+    username = FixedField(value="bruce_william")
+    password = FixedField(value="brucewil&")
+
+    
+class SignupApiCaseSchema(CaseBuilderSchema):
+    userinfo = IterableField(value=[MailUserCaseSchema, PhoneUserCaseSchema, NormalUserCaseSchema], iterative_mode='ORT')
+    invite_code = IterableField(value=["gmail_ivt", "phone_ivt", "bruce_ivt"], iterative_mode='ORT')
+    trust_value = IterableField(value=[30, 100, 1], iterative_mode='ORT')
+    case_name = UniqueField(value="signup_case")
+```
+
+> ![img_5.png](resource/img_5.png)
+
+> **请注意：你需要主观判断计算字段的权重，目前暂不支持权重设置，正交对你设定的字段视为同级别进行计算。**
+> 
+> 当然，你也可以在模型中同时使用穷举和正交，`EZ`默认优先使用**穷举**，随后对计算结果与*需要参与正交的字段*（如果有，没有将省略此步骤）进行**正交**。
+> 
+> 如：你可以将`userinfo`和`invite_code`设置`EXH`，将`trust_value`设置`ORT`，`EZ`将对`userinfo`&`invite_code`进行穷举，随后将穷举结果与`trust_value`进行正交。
+> 
+> **你当然也可以在嵌套的模型中使用正交或穷举。**
 
 ### TODO
 1.  用例支持入参，例：f"{'X-Forwarded-For': ${province_ip} }"

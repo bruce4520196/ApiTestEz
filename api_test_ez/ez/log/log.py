@@ -148,15 +148,3 @@ class Log:
         console_handler.setLevel(self.console_log_level)       # set level
         console_handler.setFormatter(formatter)                # set format
         return console_handler
-
-
-if __name__ == '__main__':
-    log = Log()
-    log1 = Log()
-    print(id(log))
-    print(id(log1))
-    # log.console_log_level = 'error'
-    # log.file_log_level = 'info'
-    # logger = log.init_logger(r'D:\PyWorker\ApiTestEz\tests\case\node\report\result')
-    # # logger.setLevel('DEBUG')
-    # logger.info('1111eeee')
