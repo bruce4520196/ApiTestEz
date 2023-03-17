@@ -80,7 +80,7 @@ class EzResponse(Response):
             raise ValidationError(f'[{self.owner}] {self.__str__()}')
 
     def __str__(self):
-        if self.response:
+        if self.response is not None:
             return f"<{self.__class__.__name__}> {self.owner}:\n" \
                    f"{self.response.text!r}"
         else:

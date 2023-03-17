@@ -20,6 +20,8 @@ class FileCaseLoaderMiddleware(CaseLoaderMiddleware):
 
     def load_test_data(self) -> list:
         data_filename = self.configs.get("case_filepath")
+        if not data_filename:
+            return []
         if isinstance(data_filename, str):
             # 增加绝对路径和相对路径兼容
             if not os.path.exists(data_filename):
