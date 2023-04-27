@@ -60,7 +60,7 @@ class EzResponse(Response):
 
     def validate(self, schema: Schema):
         """Validate from marshmallow."""
-        if self.response:
+        if self.response is not None:
             # Reload the `validators` of the `fields` which in `schema`.
             # In case the `validate` is modified.
             for field_name, field_obj in schema.declared_fields.items():
