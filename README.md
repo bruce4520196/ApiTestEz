@@ -1,5 +1,9 @@
 # ApiTestEz
 
+#### 1.0.31 更新
+
+1. 修复命令行 *-rf* 不生效问题。
+
 #### 1.0.28 更新
 
 1. [新增用例生成器](#jump_case)`CaseBuilderSchema`.

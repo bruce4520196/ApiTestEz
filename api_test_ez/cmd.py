@@ -142,7 +142,10 @@ class EzCommand:
             project.settings.set('BR_REPORT_THEME', args.report_theme)
 
         if args.report_file:
-            project.settings.set('REPORT_DIR', os.path.dirname(args.report_file))
+            report_dir = os.path.dirname(args.report_file) \
+                if os.path.dirname(args.report_file) \
+                else os.path.dirname(__file__)
+            project.settings.set('REPORT_DIR', report_dir)
             project.settings.set('REPORT_FILE_NAME', os.path.basename(args.report_file))
 
         if args.config_file:

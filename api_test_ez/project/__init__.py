@@ -159,7 +159,7 @@ class Project:
         self._settings = get_ez_settings()
         self._configs = get_ez_config(ez_file_path)
         self._logger = get_ez_logger(self._settings, self.env_name)
-        self._report = ReportConfig(self._settings)
+        # self._report = ReportConfig(self._settings)
 
     @property
     def settings(self):
@@ -175,4 +175,5 @@ class Project:
 
     @property
     def report(self):
-        return self._report
+        # We should always get the newest report config.
+        return ReportConfig(self._settings)
