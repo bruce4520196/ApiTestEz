@@ -144,7 +144,7 @@ class EzCommand:
         if args.report_file:
             report_dir = os.path.dirname(args.report_file) \
                 if os.path.dirname(args.report_file) \
-                else os.path.dirname(__file__)
+                else os.path.dirname(sys.path[0])
             project.settings.set('REPORT_DIR', report_dir)
             project.settings.set('REPORT_FILE_NAME', os.path.basename(args.report_file))
 
