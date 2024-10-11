@@ -9,8 +9,8 @@ with open(join(dirname(__file__), 'api_test_ez/VERSION'), 'rb') as f:
 install_requires = [
     'tablib==3.2.1',
     'ddt~=1.5.0',
-    'urllib3~=1.26.9',
-    'requests~=2.28.0',
+    'urllib3~=1.26.20',
+    'requests~=2.30.0',
     'pytest~=7.1.2',
     'openpyxl==3.0.10',
     'BeautifulReport~=0.1.3',
