@@ -28,7 +28,6 @@ class Http:
         Http初始化
         :param headers: 请求头。
         :param timeout: 超时时间。
-        :param with_session: 是否创建session，默认创建。
         :param allow_redirects: 是否允许重定向，默认否。
         :param verify: 是否进行https证书验证，默认否。
                        如果开启：verify='/<path>/<file_name>.pem'。
