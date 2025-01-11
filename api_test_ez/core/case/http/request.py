@@ -5,29 +5,35 @@
 # @desc    :
 """
 from api_test_ez.ez import Http
+from api_test_ez.ez import MQTT
 from api_test_ez.ez.decorator.jsonbean import json_bean
 
 
 class Request(object):
 
-    def __init__(self, http: Http):
-        self._http = http
-        self._http_data = {}
-        self._meta_data = {}
+    def __init__(self, protocols: Http | MQTT):
+        self._http = protocols if isinstance(protocols, Http) else None
+        self._mqtt = protocols if isinstance(protocols, MQTT) else None
         self._url = None
         self._host = None
         self._path = None
         self._method = None
+        self._pub_topics = None if self._http else []  # mqtt主题发布
+        self._sub_topics = None if self._http else []  # mqtt订阅发布
+        self._client_id = None
+        self._http_data = {}
+        self._mqtt_data = {}
+        self._meta_data = {}
         self._body = None
-        self._owner = None
         self._body_type = None
+        self._owner = None
 
     def _filter_data(self, request_data):
-        if request_data:
-            self._url = request_data.pop("url", default=None)
-            self._host = request_data.pop("host", default=None)
-            self._path = request_data.pop("path", default=None)
-            self._body_type = request_data.pop("body_type", default="data")
+        if request_data.get('http'):
+            self._url = request_data.pop("url", None)
+            self._host = request_data.pop("host", None)
+            self._path = request_data.pop("path", None)
+            self._body_type = request_data.pop("body_type", "data")
             if self._url is None and self._host:
                 if not self._host.startswith('http'):
                     self._host = f'http://{self._host}'
@@ -39,7 +45,7 @@ class Request(object):
                     self._url = self._host
 
             self._method = request_data.pop("method")
-            self._body = request_data.pop("body", default=None)
+            self._body = request_data.pop("body", None)
             # http
             self._http_data = {
                 "headers": request_data.pop("headers"),
@@ -50,9 +56,20 @@ class Request(object):
                 "allow_redirects": request_data.pop("allow_redirects"),
                 "verify": request_data.pop("verify"),
             }
+        elif request_data.get('mqtt'):
+            self._pub_topics = request_data.pop("pub_topics", [])
+            self._sub_topics = request_data.pop("sub_topics", [])
+            self._body = request_data.pop("body", None)
+            self._client_idy = request_data.pop("client_id", None)
+            self._mqtt_data = {
+                "env": request_data.pop("env"),
+                "broker": request_data.pop("broker"),
+                "port": request_data.pop("port"),
+                "client_id": request_data.pop("client_id"),
+            }
 
             # meta
-            self._meta_data = request_data
+        self._meta_data = request_data
 
     def set(self, request_data):
         self._filter_data(request_data)
@@ -60,6 +77,8 @@ class Request(object):
             if value:
                 if hasattr(self._http, key):
                     setattr(self._http, key, value)
+                elif hasattr(self._mqtt, key):
+                    setattr(self._mqtt, key, value)
 
     @property
     def owner(self):
@@ -125,14 +144,35 @@ class Request(object):
     def meta(self):
         return RequestMetaData(self._meta_data)
 
-    def __str__(self):
-        return f'<{self.__class__.__name__}> [{self.owner}]:\n' \
-               f'url: {self._url!r}\n' \
-               f'method: {self._method!r}\n' \
-               f'body: {self._body!r}\n' \
-               f'http_data: {self._http_data!r}\n' \
-               f'meta: {self.meta.data!r}'
+    @property
+    def mqtt(self):
+        return self._mqtt
 
+    @property
+    def pub_topics(self):
+        return self._pub_topics
+
+    @property
+    def sub_topics(self):
+        return self._sub_topics
+
+
+    def __str__(self):
+        if self._http:
+            return f'<{self.__class__.__name__}> [{self.owner}]:\n' \
+                   f'url: {self._url!r}\n' \
+                   f'method: {self._method!r}\n' \
+                   f'body: {self._body!r}\n' \
+                   f'http_data: {self._http_data!r}\n' \
+                   f'meta: {self.meta.data!r}'
+        elif self._mqtt:
+            return f'<{self.__class__.__name__}> [{self.owner}]:\n' \
+                   f'pub_topics: {self._pub_topics!r}\n' \
+                   f'sub_topics: {self._sub_topics!r}\n' \
+                   f'client_id: {self._client_id!r}\n' \
+                   f'body: {self._body!r}\n' \
+                   f'mqtt_data: {self._mqtt_data!r}\n' \
+                   f'meta: {self.meta.data!r}'
     __repr__ = __str__
 
 
@@ -148,15 +188,17 @@ class RequestMetaData:
 
     @property
     def data(self):
-        return self._meta_dict.to_dict()
+        return self._meta_dict
 
 
 if __name__ == '__main__':
-    http = Http()
-    request = Request(http)
+    # http = Http()
+    mqtt = MQTT()
+    request = Request(mqtt)
     request.set(
         {
             "url": 0,
+            "host": 1,
             "method": 11,
             "body": 12,
             "headers": 1,
@@ -168,3 +210,4 @@ if __name__ == '__main__':
             "verify": 7,
         }
     )
+    print(request)

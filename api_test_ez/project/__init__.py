@@ -177,3 +177,12 @@ class Project:
     def report(self):
         # We should always get the newest report config.
         return ReportConfig(self._settings)
+
+if __name__ == '__main__':
+
+    p = Project()
+    # print(p.settings)
+    print(p.configs)
+    c = p.configs.items()
+    for i in c:
+        print(i)
