@@ -83,6 +83,10 @@ class EzCommand:
                             help='Report style. default `html`. '
                                  'support: `html` (ie: HtmlReporter), `br` (ie: BRReporter)')
 
+        parser.add_argument('-t', '--tester', dest='tester',
+                            choices='Jenkins',
+                            help='Tester name.')
+
         # beautiful report theme
         parser.add_argument('-rt', '--report-theme', dest='report_theme',
                             default='theme_default',
@@ -129,7 +133,7 @@ class EzCommand:
             print('EZ COMMAND ERROR: `cases_path` not found. See: \n')
             ez_parser.print_help()
             return
-        if not os.path.isfile(cases_path) or not os.path.isfile(cases_path):
+        if not os.path.isfile(cases_path) and not os.path.isdir(cases_path):
             print('EZ COMMAND ERROR: `cases_path` is not a file or dir. See: \n')
             ez_parser.print_help()
             return
