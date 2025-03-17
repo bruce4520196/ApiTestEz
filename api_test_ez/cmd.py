@@ -84,7 +84,7 @@ class EzCommand:
                                  'support: `html` (ie: HtmlReporter), `br` (ie: BRReporter)')
 
         parser.add_argument('-t', '--tester', dest='tester',
-                            choices='Jenkins',
+                            default='Jenkins',
                             help='Tester name.')
 
         # beautiful report theme
@@ -170,10 +170,10 @@ class EzCommand:
         if args.action == 'run':
             if project.report.report_dir:
                 if args.report_style == 'br':
-                    BRReporter(args.cases_path).run()
+                    BRReporter(args.cases_path,tester=args.tester).run()
                     return
                 elif args.report_style == 'html':
-                    HtmlReporter(args.cases_path).run()
+                    HtmlReporter(args.cases_path,tester=args.tester).run()
                     return
                 else:
                     print(f'EZ COMMAND WARNING: `{args.report_style}` is not supported `report_style`, '
