@@ -156,11 +156,12 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
 
         body = self.request.body
         body_type = self.request.body_type
+        files = self.request.files
 
         # Request start
         if url and hasattr(http, method):
             do = getattr(http, method)
-            self.response.set(do(url=url, **{body_type: body}))
+            self.response.set(do(url=url, files=files, **{body_type: body}))
             http.close()
             self.logger.debug(repr(self.response))
         else:

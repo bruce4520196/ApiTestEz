@@ -11,6 +11,8 @@ from unittest.case import _Outcome
 class UnitHttpFrame(unittest.TestCase):
 
     __autoRequest__ = 'on'
+    def __deepcopy__(self, memo):
+        return self
 
     def initRequest(self, testmethod_name):
         pass
