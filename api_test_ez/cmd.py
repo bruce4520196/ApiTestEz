@@ -112,7 +112,8 @@ class EzCommand:
             return
 
         if argv[0] not in EZ_SUPPORT_ACTION:
-            print(f'EZ COMMAND ERROR: unknown action-word `{argv[0]}`. Support word must in {EZ_SUPPORT_ACTION}. See: \n')
+            print(
+                f'EZ COMMAND ERROR: unknown action-word `{argv[0]}`. Support word must in {EZ_SUPPORT_ACTION}. See: \n')
             ez_parser.print_help()
             return
 
@@ -170,10 +171,10 @@ class EzCommand:
         if args.action == 'run':
             if project.report.report_dir:
                 if args.report_style == 'br':
-                    BRReporter(args.cases_path,tester=args.tester).run()
+                    BRReporter(args.cases_path, tester=args.tester).run()
                     return
                 elif args.report_style == 'html':
-                    HtmlReporter(args.cases_path,tester=args.tester).run()
+                    HtmlReporter(args.cases_path, tester=args.tester).run()
                     return
                 else:
                     print(f'EZ COMMAND WARNING: `{args.report_style}` is not supported `report_style`, '
