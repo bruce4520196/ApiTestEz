@@ -21,6 +21,7 @@ class Request(object):
         self._body = None
         self._owner = None
         self._body_type = None
+        self._files = None
 
     def _filter_data(self, request_data):
         if request_data:
@@ -40,6 +41,7 @@ class Request(object):
 
             self._method = request_data.pop("method")
             self._body = request_data.pop("body", default=None)
+            self._files = request_data.pop("files", default=None)
             # http
             self._http_data = {
                 "headers": request_data.pop("headers"),
@@ -116,6 +118,14 @@ class Request(object):
     @body_type.setter
     def body_type(self, value):
         self._body_type = value
+
+    @property
+    def files(self):
+        return self._files
+
+    @files.setter
+    def files(self, value):
+        self._files = value
 
     @property
     def http(self):
