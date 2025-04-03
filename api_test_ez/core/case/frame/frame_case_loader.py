@@ -1,4 +1,5 @@
 import os
+import sys
 
 import tablib
 
@@ -24,6 +25,8 @@ class FileCaseLoaderMiddleware(CaseLoaderMiddleware):
             return []
         if isinstance(data_filename, str):
             # 增加绝对路径和相对路径兼容
+            data_filename = data_filename.replace('/', '\\') if "win" in sys.platform else data_filename.replace('\\',
+                                                                                                                 '/')
             if not os.path.exists(data_filename):
                 data_filename = os.path.join(os.environ[ENV_EZ_PROJECT_DIR], data_filename)
                 if not os.path.exists(data_filename):
