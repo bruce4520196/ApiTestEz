@@ -1,0 +1,47 @@
+[
+  {
+    "test_name": "创建普通用户",
+    "user_data": {
+      "name": "张三",
+      "username": "zhangsan",
+      "email": "zhangsan@example.com",
+      "phone": "13800138000"
+    },
+    "expected_status": 201,
+    "expected_fields": ["id", "name", "username", "email"]
+  },
+  {
+    "test_name": "创建管理员用户",
+    "user_data": {
+      "name": "李四",
+      "username": "lisi_admin",
+      "email": "lisi@admin.com",
+      "phone": "13900139000",
+      "role": "admin"
+    },
+    "expected_status": 201,
+    "expected_fields": ["id", "name", "username", "email", "role"]
+  },
+  {
+    "test_name": "创建用户名重复",
+    "user_data": {
+      "name": "王五",
+      "username": "zhangsan",
+      "email": "wangwu@example.com",
+      "phone": "13700137000"
+    },
+    "expected_status": 409,
+    "expected_error": "用户名已存在"
+  },
+  {
+    "test_name": "创建邮箱格式错误",
+    "user_data": {
+      "name": "赵六",
+      "username": "zhaoliu",
+      "email": "invalid-email",
+      "phone": "13600136000"
+    },
+    "expected_status": 400,
+    "expected_error": "邮箱格式不正确"
+  }
+]
