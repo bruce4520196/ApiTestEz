@@ -13,6 +13,7 @@ from ddt import ddt, data, feed_data
 from api_test_ez.core.case.errors import HttpRequestException, CaseFileNotFoundException
 from api_test_ez.core.case.frame.frame_case_loader import FileCaseLoaderMiddleware
 from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
+from api_test_ez.core.case.frame.frame_pytest import PytestHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
 
@@ -84,7 +85,34 @@ class CaseMetaclass(type):
                 return super_new(mcs, name, bases, new_attrs)
 
         return super_new(mcs, name, bases, attrs)
-
+class PyCaseMetaclass(type):
+    def __new__(mcs, name, bases, attrs):
+        super_new = super().__new__
+        if name == 'Pytest':
+            return super_new(mcs, name, bases, attrs)
+        for base_class in bases:
+            if base_class is Pytest:
+                new_attrs = {}
+                for func_name, func in attrs.items():
+                    if func_name.startswith('test'):
+                        data_len = len(getattr(base_class, 'data_set', []) or [])
+                        if data_len == 0:
+                            new_attrs.update({func_name: func})
+                        else:
+                            for i in range(data_len):
+                                def _make(f, idx):
+                                    def _wrapper(self, *args, **kwargs):
+                                        return f(self, *args, **kwargs)
+                                    _wrapper.__name__ = f"{f.__name__}__{idx+1}"
+                                    _wrapper.__qualname__ = _wrapper.__name__
+                                    _wrapper.__doc__ = f.__doc__
+                                    setattr(_wrapper, '_case_index', idx)
+                                    return _wrapper
+                                new_attrs.update({f"{func_name}__{i+1}": _make(func, i)})
+                    else:
+                        new_attrs.update({func_name: func})
+                return super_new(mcs, name, bases, new_attrs)
+        return super_new(mcs, name, bases, attrs)
 
 @ddt
 class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
@@ -152,14 +180,14 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
         # Prepare request
         http = self.request.http
         url = self.request.url
-        method = self.request.method.lower()
+        method = self.request.method.lower() if self.request.method else None
 
         body = self.request.body
         body_type = self.request.body_type
         files = self.request.files
 
         # Request start
-        if url and hasattr(http, method):
+        if url and method and hasattr(http, method):
             do = getattr(http, method)
             self.response.set(do(url=url, files=files, **{body_type: body}))
             http.close()
@@ -169,4 +197,86 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
                 raise HttpRequestException(err="`url` can not be None.")
             else:
                 raise HttpRequestException(err=f"Not support request method `{method}`")
+
+
+class Pytest(PytestHttpFrame, metaclass=PyCaseMetaclass):
+    case_path_dir = os.getcwd()
+    ez_project = Project(ez_file_path=case_path_dir, env_name=os.path.basename(case_path_dir))
+    configs = ez_project.configs
+    logger = ez_project.logger
+
+    case_loader_str = configs.get("case_loader")
+    if case_loader_str:
+        case_loader_str_list = case_loader_str.split('.')
+        case_loader_module_str = ".".join(case_loader_str_list[:-1])
+        case_loader_class_str = case_loader_str_list[-1]
+        case_loader_module = __import__(case_loader_module_str, fromlist=[case_loader_class_str])
+        case_loader_class = getattr(case_loader_module, case_loader_class_str)
+    else:
+        case_loader_class = FileCaseLoaderMiddleware
+
+    case_loader = case_loader_class(configs)
+    data_set = case_loader.load_test_data()
+
+    __autoRequest__ = configs.get("auto_request")
+
+    def __deepcopy__(self, memo):
+        return self
+
+    def setup_method(self, method):
+        self.local_config = copy.deepcopy(self.configs)
+        self.request = Request(http=Http())
+        self.response = EzResponse(logger=self.logger)
+        idx = getattr(method, '_case_index', None)
+        if idx is not None:
+            setattr(self, 'case_index', idx)
+        self.request.owner = method.__name__
+        self.response.owner = method.__name__
+        self.initRequest(method.__name__)
+        self.beforeRequest()
+        if self.__autoRequest__ == 'on':
+            self.doRequest()
+            self.afterRequest()
+
+    def teardown_method(self, method):
+        pass
+
+    def initRequest(self, testmethod_name):
+        if isinstance(self.data_set, list) and len(self.data_set) > 0:
+            idx = getattr(self, 'case_index', 0)
+            if not isinstance(idx, int) or idx < 0 or idx >= len(self.data_set):
+                idx = 0
+            case_data = self.data_set[idx]
+            if isinstance(case_data, dict):
+                for key, value in case_data.items():
+                    self.local_config.set(key, value, priority="case")
+        self.request.set(self.local_config)
+        return self.request
+
+    def beforeRequest(self):
+        pass
+
+    def doRequest(self, request=None):
+        if request:
+            self.request.set(request)
+        self.logger.debug(repr(self.request))
+        http = self.request.http
+        url = self.request.url
+        method = self.request.method.lower() if self.request.method else None
+        body = self.request.body
+        body_type = self.request.body_type
+        files = self.request.files
+        if url and method and hasattr(http, method):
+            do = getattr(http, method)
+            self.response.set(do(url=url, files=files, **{body_type: body}))
+            http.close()
+            self.logger.debug(repr(self.response))
+        else:
+            if not url:
+                raise HttpRequestException(err="`url` can not be None.")
+            else:
+                raise HttpRequestException(err=f"Not support request method `{method}`")
+
+    def afterRequest(self):
+        pass
 

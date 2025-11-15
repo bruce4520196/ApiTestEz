@@ -4,8 +4,7 @@
 # @Author  : bruce
 # @desc    :
 """
-from api_test_ez.core.case.frame.frame_pytest import BaseCase
 
 
-class Case(BaseCase):
+class Case(object):
     pass
