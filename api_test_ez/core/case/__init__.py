@@ -6,17 +6,17 @@
 """
 import copy
 import os
+import sys
 from importlib import import_module
 
-from ddt import ddt, data, feed_data
+from ddt import data, ddt, feed_data
 
-from api_test_ez.core.case.errors import HttpRequestException, CaseFileNotFoundException
+from api_test_ez.core.case.errors import HttpRequestException
 from api_test_ez.core.case.frame.frame_case_loader import FileCaseLoaderMiddleware
-from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.frame.frame_pytest import PytestHttpFrame
+from api_test_ez.core.case.frame.frame_unittest import UnitHttpFrame
 from api_test_ez.core.case.http.request import Request
 from api_test_ez.core.case.http.response import EzResponse
-
 from api_test_ez.ez import Http
 from api_test_ez.project import Project
 
@@ -45,11 +45,12 @@ class CaseMetaclass(type):
     """Mapping test method and ddt data.
     `ddt` only copy the method which is decorated by `data`,
     let's make test_method and ddt_data map."""
+
     def __new__(mcs, name, bases, attrs):
         super_new = super().__new__
 
         # If a base class just call super new
-        if name == 'UnitCase':
+        if name == "UnitCase":
             return super_new(mcs, name, bases, attrs)
 
         for base_class in bases:
@@ -58,7 +59,7 @@ class CaseMetaclass(type):
                 # Find data functions
                 ddt_func_names = []
                 for base_attr_name in dir(base_class):
-                    if base_attr_name.startswith('load_data'):
+                    if base_attr_name.startswith("load_data"):
                         ddt_func_names.append(base_attr_name)
 
                 # If data function is None, let test run itself.
@@ -68,9 +69,9 @@ class CaseMetaclass(type):
                 new_attrs = {}
                 # Mapping test methods and data functions
                 for func_name, func in attrs.items():
-                    if func_name.startswith('test'):
+                    if func_name.startswith("test"):
                         for ddt_func_name in ddt_func_names:
-                            test_name = ddt_func_name.replace('load_data', func_name)
+                            test_name = ddt_func_name.replace("load_data", func_name)
                             # Let's set a `%data_owner` attr to test function
                             # Then we can find the data later.
 
@@ -85,40 +86,84 @@ class CaseMetaclass(type):
                 return super_new(mcs, name, bases, new_attrs)
 
         return super_new(mcs, name, bases, attrs)
+
+
 class PyCaseMetaclass(type):
     def __new__(mcs, name, bases, attrs):
         super_new = super().__new__
-        if name == 'Pytest':
+        if name == "Pytest":
             return super_new(mcs, name, bases, attrs)
         for base_class in bases:
             if base_class is Pytest:
                 new_attrs = {}
+                module_name = attrs.get("__module__")
+                case_path_dir = os.path.dirname(sys.modules[module_name].__file__)
+                from api_test_ez.project import (
+                    get_ez_config,
+                    get_ez_logger,
+                    get_ez_settings,
+                )
+
+                configs = get_ez_config(case_path_dir)
+                settings = get_ez_settings()
+                logger = get_ez_logger(settings, os.path.basename(case_path_dir))
+                case_loader_str = configs.get("case_loader")
+                if case_loader_str:
+                    case_loader_str_list = case_loader_str.split(".")
+                    case_loader_module_str = ".".join(case_loader_str_list[:-1])
+                    case_loader_class_str = case_loader_str_list[-1]
+                    case_loader_module = import_module(case_loader_module_str)
+                    case_loader_class = getattr(
+                        case_loader_module, case_loader_class_str
+                    )
+                else:
+                    case_loader_class = FileCaseLoaderMiddleware
+                case_loader = case_loader_class(configs)
+                data_set = case_loader.load_test_data()
+                __autoRequest__ = configs.get("auto_request")
+                new_attrs.update(
+                    {
+                        "case_path_dir": case_path_dir,
+                        "configs": configs,
+                        "logger": logger,
+                        "data_set": data_set,
+                        "__autoRequest__": __autoRequest__,
+                    }
+                )
                 for func_name, func in attrs.items():
-                    if func_name.startswith('test'):
-                        data_len = len(getattr(base_class, 'data_set', []) or [])
+                    if func_name.startswith("test"):
+                        data_len = len(data_set or [])
                         if data_len == 0:
                             new_attrs.update({func_name: func})
                         else:
                             for i in range(data_len):
+
                                 def _make(f, idx):
                                     def _wrapper(self, *args, **kwargs):
                                         return f(self, *args, **kwargs)
+
                                     _wrapper.__name__ = f"{f.__name__}__{idx+1}"
                                     _wrapper.__qualname__ = _wrapper.__name__
                                     _wrapper.__doc__ = f.__doc__
-                                    setattr(_wrapper, '_case_index', idx)
+                                    setattr(_wrapper, "_case_index", idx)
                                     return _wrapper
-                                new_attrs.update({f"{func_name}__{i+1}": _make(func, i)})
+
+                                new_attrs.update(
+                                    {f"{func_name}__{i+1}": _make(func, i)}
+                                )
                     else:
                         new_attrs.update({func_name: func})
                 return super_new(mcs, name, bases, new_attrs)
         return super_new(mcs, name, bases, attrs)
 
+
 @ddt
 class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
     # env init
     case_path_dir = os.getcwd()
-    ez_project = Project(ez_file_path=case_path_dir, env_name=os.path.basename(case_path_dir))
+    ez_project = Project(
+        ez_file_path=case_path_dir, env_name=os.path.basename(case_path_dir)
+    )
     configs = ez_project.configs
     logger = ez_project.logger
 
@@ -126,7 +171,7 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
     case_loader_str = configs.get("case_loader")
     if case_loader_str:
         # Case-loader define as <module>.<case_loader_class>
-        case_loader_str_list = case_loader_str.split('.')
+        case_loader_str_list = case_loader_str.split(".")
         case_loader_module_str = ".".join(case_loader_str_list[:-1])
         case_loader_class_str = case_loader_str_list[-1]
         case_loader_module = import_module(case_loader_module_str)
@@ -200,25 +245,9 @@ class UnitCase(UnitHttpFrame, metaclass=CaseMetaclass):
 
 
 class Pytest(PytestHttpFrame, metaclass=PyCaseMetaclass):
-    case_path_dir = os.getcwd()
-    ez_project = Project(ez_file_path=case_path_dir, env_name=os.path.basename(case_path_dir))
-    configs = ez_project.configs
-    logger = ez_project.logger
-
-    case_loader_str = configs.get("case_loader")
-    if case_loader_str:
-        case_loader_str_list = case_loader_str.split('.')
-        case_loader_module_str = ".".join(case_loader_str_list[:-1])
-        case_loader_class_str = case_loader_str_list[-1]
-        case_loader_module = __import__(case_loader_module_str, fromlist=[case_loader_class_str])
-        case_loader_class = getattr(case_loader_module, case_loader_class_str)
-    else:
-        case_loader_class = FileCaseLoaderMiddleware
-
-    case_loader = case_loader_class(configs)
-    data_set = case_loader.load_test_data()
-
-    __autoRequest__ = configs.get("auto_request")
+    @classmethod
+    def setup_class(cls):
+        pass
 
     def __deepcopy__(self, memo):
         return self
@@ -227,14 +256,14 @@ class Pytest(PytestHttpFrame, metaclass=PyCaseMetaclass):
         self.local_config = copy.deepcopy(self.configs)
         self.request = Request(http=Http())
         self.response = EzResponse(logger=self.logger)
-        idx = getattr(method, '_case_index', None)
+        idx = getattr(method, "_case_index", None)
         if idx is not None:
-            setattr(self, 'case_index', idx)
+            setattr(self, "case_index", idx)
         self.request.owner = method.__name__
         self.response.owner = method.__name__
         self.initRequest(method.__name__)
         self.beforeRequest()
-        if self.__autoRequest__ == 'on':
+        if self.__autoRequest__ == "on":
             self.doRequest()
             self.afterRequest()
 
@@ -243,7 +272,7 @@ class Pytest(PytestHttpFrame, metaclass=PyCaseMetaclass):
 
     def initRequest(self, testmethod_name):
         if isinstance(self.data_set, list) and len(self.data_set) > 0:
-            idx = getattr(self, 'case_index', 0)
+            idx = getattr(self, "case_index", 0)
             if not isinstance(idx, int) or idx < 0 or idx >= len(self.data_set):
                 idx = 0
             case_data = self.data_set[idx]
@@ -279,4 +308,3 @@ class Pytest(PytestHttpFrame, metaclass=PyCaseMetaclass):
 
     def afterRequest(self):
         pass
-
