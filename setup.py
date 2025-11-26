@@ -15,7 +15,10 @@ install_requires = [
     'openpyxl==3.0.10',
     'BeautifulReport~=0.1.3',
     'marshmallow~=3.16.0',
-    'unittestreport~=1.5.6'
+    'unittestreport~=1.5.6',
+    'pytest-html~=3.1.1',
+    'pytest~=7.1.0',
+    'allure-pytest~=2.15.0'
 ]
 
 
