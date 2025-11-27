@@ -72,7 +72,7 @@ def get_ez_config(ez_file_path):
     # ez case config
     ez_cfg_name = 'ez.cfg'
     ez_cfg_filelist = search_file(ez_cfg_name, path=ez_file_path)
-    ez_cfg_filelist.reverse()
+    # ez_cfg_filelist.reverse()
 
     _configs = Configs()
     support_file_config_priority = ['package', 'module', 'project']
