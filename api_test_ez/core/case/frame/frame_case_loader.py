@@ -2,7 +2,7 @@ import os
 
 import tablib
 
-from api_test_ez.core.case import CaseFileNotFoundException
+from api_test_ez.core.case.errors import CaseFileNotFoundException
 from api_test_ez.project import ENV_EZ_PROJECT_DIR
 
 
