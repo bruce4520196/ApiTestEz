@@ -8,6 +8,7 @@ import copy
 import os
 import sys
 from importlib import import_module
+import pytest
 
 from ddt import data, ddt, feed_data
 
@@ -269,6 +270,9 @@ class Pytest(PytestHttpFrame, metaclass=PyCaseMetaclass):
 
     def teardown_method(self, method):
         pass
+
+    def skipTest(self, reason):
+        pytest.skip(reason)
 
     def initRequest(self, testmethod_name):
         if isinstance(self.data_set, list) and len(self.data_set) > 0:
